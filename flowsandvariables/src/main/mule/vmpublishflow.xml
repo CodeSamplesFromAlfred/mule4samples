@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="vmqueueflowsFlow" doc:id="3048a281-86a2-4128-b48a-2edb190970a9" >
+		<http:listener doc:name="Listener" doc:id="62ca97a8-1229-424d-a2a2-ca1ca9c966db" config-ref="Global_HTTP_Listener" path="/vmpublishtest"/>
+		<vm:publish doc:name="Publish" doc:id="dd0e7fe0-1ee1-4602-add7-05de422eba12" config-ref="Global_VM_Config" queueName="queue1"/>
+		<ee:transform doc:name="Transform Message" doc:id="abdf21ab-14c1-4d55-8330-ff5daaa670db" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/convertEmpToJson.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="87f5ead5-ed41-4a52-90e0-e98c2ba626e8" message="#[payload]"/>
+	</flow>
+</mule>

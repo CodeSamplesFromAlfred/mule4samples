@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<flow name="variablesFlow" doc:id="a969fb65-a8e0-42ab-9ed8-e029a11d0a4a" >
+		<http:listener doc:name="Accepts Http requests" doc:id="2fb18077-15dd-480e-bd32-5645837903a1" config-ref="Global_HTTP_Listener" path="/testflow" allowedMethods="POST">
+			<ee:repeatable-file-store-stream bufferUnit="MB" />
+		</http:listener>
+		<set-variable value='12' doc:name="Set requestUserid variable" doc:id="b1317256-88a5-435e-a5ff-110a4d5af501" variableName="requestUserid"/>
+		<set-variable value='#[vars.requestUserid  + 1]' doc:name="Set requestUserid variable" doc:id="7651aff5-a43f-4163-9221-f281d4a855af" variableName="requestUserid"/>
+		<logger level="INFO" doc:name="logs the variable before sending to Http requester" doc:id="5d9c047c-68b7-44d8-8526-3a0945fcd58e" message="#['requestUserid' ++ vars.requestUserid]"/>
+		<flow-ref doc:name="subflowA" doc:id="23d4800b-8b6f-44d2-a680-556f21a93997" name="subflowA" targetValue="#[attributes.header]"/>
+		<logger level="INFO" doc:name="logs the payload coming from subflowA" doc:id="39c12c59-ac57-4c8c-a476-16ce4c29e4a5" message="#[payload]"/>
+		<logger level="INFO" doc:name="Logs the variable server in flow" doc:id="46efe219-fe47-4f88-9882-a852c933f65a"  message="#[vars.server]" />
+		<flow-ref doc:name="subflowC" doc:id="431f6713-d53d-4c80-bfe4-984ce5b9b8ff" name="subflowC"/>
+		<logger level="INFO" doc:name="Logs someName Variable" doc:id="4f2c29db-c9c6-4ac1-a9a1-450145f30e9a"  message="#['variablesFlow: ' ++ vars.someName]" />
+	</flow>
+	<sub-flow name="subflowA" doc:id="6100833e-4b83-4bc5-badf-f3e96596f3fb" >
+		<http:request method="POST" doc:name="Making Http Request" doc:id="8e32d7a2-7965-4bed-a8ed-bd4c6fd8a59f" config-ref="Global_Httpbin_Request" path="/post">
+		</http:request>
+		<set-variable value='#["serverA"]' doc:name="Set server variable" doc:id="31568bd1-a743-4f20-8bca-eefcb6ead64b" variableName="server"/>		
+		<set-variable value='#[vars.requestUserid + 1]' doc:name="Set requestUserid variable" doc:id="4c917de8-1803-4491-b167-254a4a35247b" variableName="requestUserid"/>
+		<logger level="INFO" doc:name="Logs the response payload from the requester" doc:id="53811d00-52f4-4d04-bb8c-4d44320382c7" message="#[payload]" />
+		<flow-ref doc:name="subflowB" doc:id="82a803cf-0bfc-4643-b4b4-82d75835c765" name="subflowB"/>
+		<logger level="INFO" doc:name="Logs the variable server in subflow" doc:id="322d64e9-a558-4573-bda5-25b342c70e1a"  message="#['subflow: '++ vars.server]" />
+	</sub-flow>
+	<sub-flow name="subflowB" doc:id="f67833a3-cb24-4622-bcf0-2498fc3f4404" >
+		<set-variable doc:name="Set subflowB variable" doc:id="fc9ea35b-47fe-4f8c-95a8-c6b479b6b2f8" variableName="subflowB" value='#[attributes.statusCode]'/>
+		<set-payload value="#['This is random payload set in subflowB']" doc:name="Set Payload in subflowB" doc:id="5074e10a-5aff-4f28-aa4f-5daa0f7738c1" />
+		<logger level="INFO" doc:name="Logs the subflowB variable in subflow " doc:id="7b41b6e7-bfb3-4e2b-9f34-d96f70f494bc"  message="#[vars.subflowB]" />		
+	</sub-flow>
+	<sub-flow name="subflowC" doc:id="c44eb37c-08e3-4daf-852e-22c2ce6b4ddc" >
+		<set-variable value="alfred" doc:name="Set someName Variable" doc:id="2a0a5a2f-29b7-43a9-a2f5-2d3bef266f5d" variableName="someName"/>
+		<logger level="INFO" doc:name="Logs someName variable in subflowC" doc:id="3f52471f-24a1-4254-b742-67931adce689" message="#['subflowC: ' ++ vars.someName]"/>
+	</sub-flow>
+</mule>

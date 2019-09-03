@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="publishJSONtoQueue" doc:id="a6be048b-b668-440f-ada9-ea8412dc575b">
+		<http:listener doc:name="Listener" doc:id="f3df1d5f-29c7-4a44-a4a1-0e2d684e0747" config-ref="Global_HTTP_Listener" path="/publishjson" outputMimeType="application/json" allowedMethods="POST">
+			<ee:repeatable-file-store-stream inMemorySize="3" bufferUnit="MB" />
+		</http:listener>
+		<jms:publish doc:name="Publish payload json to queue"
+			doc:id="1f334f6d-7969-4c4f-b0f3-4b775a9a6e72" config-ref="Global_ActiveMQ_Config"
+			destination="jsonqueue">
+		</jms:publish>
+		<set-variable doc:name="Set amqSuccess variable"
+			doc:id="d0084807-08f7-4fd2-bc2e-91b9109f6f36" variableName="amqSuccess"
+			value='true' />
+		<logger level="INFO" doc:name="Logs the paylaod after queueing the message "
+			doc:id="a616c397-2d4a-4730-8da8-2012d10788df" message="#[payload]" />
+	</flow>
+	<flow name="variablesexplainedFlow" doc:id="6b7d52fc-f831-4868-adda-517b173d28f8" initialState="stopped">
+		<jms:listener doc:name="Listener"
+			doc:id="fc0a1860-f920-4dde-91b4-52816e810e80" config-ref="Global_ActiveMQ_Config" destination="jsonqueue">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+		</jms:listener>
+		<logger level="INFO" doc:name="Logs the amqSuccess" doc:id="55bd809f-39f1-43a0-8829-e6bbe730ead9" message="#[vars.amqSuccess]"/>
+		<logger level="INFO" doc:name="Logs the payload" doc:id="34138756-6d3a-47ee-bde7-6fd687b41edf" message="#[payload]"/>
+	</flow>
+</mule>

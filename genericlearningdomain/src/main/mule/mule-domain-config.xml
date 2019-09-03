@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain:mule-domain xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:domain="http://www.mulesoft.org/schema/mule/ee/domain"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+               http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+               http://www.mulesoft.org/schema/mule/ee/domain http://www.mulesoft.org/schema/mule/ee/domain/current/mule-domain-ee.xsd
+               http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+               http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+               http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+               http://www.mulesoft.org/schema/mule/os	http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<!-- Global object store config -->
+	<os:object-store name="Global_object_store" doc:name="Object store" doc:id="6898acb5-51f4-4068-9c12-c0d214d7d0c2" maxEntries="25000" entryTtl="30" entryTtlUnit="MINUTES" expirationInterval="5" />
+	
+	<!-- configure here resource to be shared within the domain -->
+	<http:listener-config name="Global_HTTP_Listener"
+		doc:name="Global_HTTP_Listener" doc:id="c22e826d-3aea-4b2e-a81e-928329833">
+		<http:listener-connection host="0.0.0.0"
+			port="8888" />
+	</http:listener-config>
+	<jms:config name="Global_ActiveMQ_Config" doc:name="Global_ActiveMQ_Config" doc:id="d1e501a1-435b-2395-b603-05a9b5d87c73" >
+		<jms:active-mq-connection username="user" password="password" >
+			<jms:factory-configuration brokerUrl="tcp://localhost:61616" />		
+		</jms:active-mq-connection>
+	</jms:config>
+	<http:request-config name="Global_Httpbin_Request" doc:name="HTTP Request configuration" doc:id="11b6ba6d-742d-45fe-8050-7ddde5fff6e6" >
+		<http:request-connection host="httpbin.org" port="80" streamResponse="false" responseBufferSize="2048" />
+	</http:request-config>
+	<vm:config name="Global_VM_Config" doc:name="VM Config" doc:id="25f78fc0-9517-442e-9628-3f53527c6677" >
+		<vm:queues >
+			<vm:queue queueName="queue1" queueType="PERSISTENT" maxOutstandingMessages="1000" />
+			<vm:queue queueName="queue2" queueType="TRANSIENT" />
+			<vm:queue queueName="queue3" queueType="PERSISTENT" maxOutstandingMessages="10" />
+		</vm:queues>
+	</vm:config>
+	<http:request-config name="Gobal_github_user_request" doc:name="HTTP Request configuration" doc:id="dbc8172c-32e7-4899-8312-551d12bcd1dd" >
+		<http:request-connection protocol="HTTPS" host="api.github.com" port="443" >
+			<http:authentication >
+				<http:basic-authentication username="alfredk.j@gmail.com" password="johnFIRE@123" />
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+</domain:mule-domain>
