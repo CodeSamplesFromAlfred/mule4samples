@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+	http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+	http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+	http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<apikit:config name="Apikit-Config" raml="MyRandomAPI.raml"
+		outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<flow name="Apikit-main">
+		<http:listener config-ref="Global_HTTP_Listener" path="/*">
+			<http:response statusCode="#[vars.httpStatus default 200]">
+			</http:response>
+			<http:error-response statusCode="#[vars.httpStatus default 500]">
+				<http:body><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<apikit:router config-ref="Apikit-Config" />
+		<error-handler ref="ApikitRouterErrorHandler" />
+	</flow>
+	<flow name="Apikit-console">
+		<http:listener config-ref="Global_HTTP_Listener" path="/console/*">
+			<http:response statusCode="#[vars.httpStatus default 200]">
+				<http:headers>#[vars.outboundHeaders default {}]</http:headers>
+			</http:response>
+			<http:error-response statusCode="#[vars.httpStatus default 500]">
+				<http:body>#[payload]</http:body>
+				<http:headers>#[vars.outboundHeaders default {}]</http:headers>
+			</http:error-response>
+		</http:listener>
+		<apikit:console config-ref="Apikit-Config" />
+		<error-handler>
+			<on-error-propagate type="APIKIT:NOT_FOUND">
+				<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+					xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus">404
+						</ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="get:\extractperson:Apikit-Config">
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+			xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="66ca4a53-6ec2-45f4-930c-5849e1dc5f99">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  name: "alfred",
+  "c-type": "application/json"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="FlowErrorHandler" />
+	</flow>
+	<flow name="get:\extractperson\(personid):Apikit-Config">
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+			<ee:variables>
+				<ee:set-variable variableName="personid">attributes.uriParams.personid
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+			xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  name: "alfred",
+  "c-type": "application/json"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="FlowErrorHandler" />
+	</flow>
+	<flow name="post:\checkrequesttype:application\json:MyRandomAPI-config">
+		<ee:transform doc:name="Transform Message"
+			doc:id="6873184f-ab64-49f9-acd3-4266545cf20b">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+vars.requestHeaders mapObject {
+	'$$':$ 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value='#[payload ++ {userid123:attributes.headers."userid"}]'
+			doc:name="Set incoming header userid in outbound header map" doc:id="fef8f6a3-35f5-485d-a7d3-29da429ab410"
+			variableName="outboundHeaders" />
+		<flow-ref doc:name="checkrequesttypeflow" doc:id="d27c65c4-cb3d-42fb-bc42-fd26c8cfc97e"
+			name="checkrequesttypeflow" />
+		<logger level="INFO" doc:name="Logger"
+			doc:id="bd40cee3-c535-43e8-8ba7-62de0d8bb13c" message="#[payload]" />
+		<error-handler ref="FlowErrorHandler" />
+	</flow>
+	<flow name="post:\checkrequesttype:application\xml:Apikit-Config">
+		<ee:transform doc:name="Transform Message"
+			doc:id="e6154b49-a5ca-4d6a-9de6-d83e1091fe48">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+vars.requestHeaders mapObject {
+	'$$':$ 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value='#[payload ++ {userid123:attributes.headers."userid"}]'
+			doc:name="Set incoming header userid in outbound header map" doc:id="a7db22d7-cbb5-47a1-91a0-c55c596d6d2e"
+			variableName="outboundHeaders" />
+		<flow-ref doc:name="checkrequesttypeflow" doc:id="2824fa17-651e-4960-8a14-c3fe38b2eadb"
+			name="checkrequesttypeflow" />
+		<logger level="INFO" doc:name="Logger"
+			doc:id="1f230ee3-8d12-411f-b457-d62c8284c5ff" message="#[payload]" />
+		<error-handler ref="FlowErrorHandler" />
+	</flow>
+</mule>

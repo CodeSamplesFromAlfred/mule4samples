@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+
+	<flow name="jmspublishflow" doc:id="8rd165c6-5686-4438-a189-07261eaa85db">
+		<http:listener doc:name="Listener"
+			doc:id="7b829c67-5215-4a45-9b1e-5a08bfa9f3c3" config-ref="Global_HTTP_Listener"
+			path="/queuepublisher" />
+		<jms:publish doc:name="Modifies the payload to xml and publish to a queue"
+			doc:id="23ab5a06-3e68-4d59-aa3e-4d35570a6123" config-ref="Global_ActiveMQ_Config"
+			destination="xmlqueue" priority="1" timeToLive="15" timeToLiveUnit="MINUTES">
+			<jms:message sendContentType="false">
+				<jms:body><![CDATA[#[output application/xml encoding='UTF-8'
+---
+root:{
+  			name: payload.name,
+    		age: attributes.queryParams.age
+    	}]]]></jms:body>
+			</jms:message>
+		</jms:publish>
+		<logger level="INFO"
+			doc:name="Logs the payload after publishing in to the active mq"
+			doc:id="0a1ea432-c76b-4581-94bb-335d37541fff" message="#[payload]" />
+			<jms:publish doc:name="Publish the json payload to a queue"
+			doc:id="96fa35bc-421a-4058-904d-81a39eddacc0" config-ref="Global_ActiveMQ_Config"
+			destination="jsonqueue" priority="1" timeToLive="50" timeToLiveUnit="MINUTES" sendCorrelationId="ALWAYS">
+			<jms:message sendContentType="false">
+			</jms:message>
+		</jms:publish>
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="Handles HTTP namespace error" doc:id="a348e4f3-c8a6-44f4-aed0-fe01427578f5" when="#[error.errorType.namespace == 'HTTP']">
+				<logger level="INFO" doc:name="Logger" doc:id="21bb369d-0042-48ee-bb98-a4fe727167a9" message="#[error.errorType.identifier]"/>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="Handles JMS or ANY name space errors" doc:id="c414c610-b34b-4630-8c78-c4eaca9a7e38" when="#[error.errorType.namespace == 'JMS' or error.errorType.namespace == 'ANY']">
+				<set-payload value="on error propagate in the flow " doc:name="Set Payload" doc:id="659048ae-a896-40ce-b28f-3e45e344f0fa" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="jmslistenerflow" doc:id="d82d58fa-d269-43a5-b710-46eebe5b15d4" initialState="started">
+		<jms:listener doc:name="Listener" doc:id="2ca533d2-e90a-47ce-add9-b89b2693a374" config-ref="Global_ActiveMQ_Config" destination="xmlqueue" ackMode="IMMEDIATE" inboundContentType="application/xml" inboundEncoding="UTF-8" numberOfConsumers="10">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+			<jms:response disableMessageId="true" />
+		</jms:listener>
+		<logger level="INFO" doc:name="log the payload coming from the jms listener" doc:id="1b584ed6-dcd9-4ea7-906b-abf7e72e4afa" message="#[payload]"/>
+	</flow>
+	<flow name="jmsconsumeflow" doc:id="f9b58556-8c90-49b7-b4f5-1207e8d99763">
+		<http:listener doc:name="Listener"
+			doc:id="8c38ab8d-4adf-4c92-bae5-645b83e86cad" config-ref="Global_HTTP_Listener"
+			path="/queueconsumer" />
+		<jms:consume doc:name="Consume from the jms queue 'jsonqueue '" doc:id="2a9a9fce-2009-4a95-9190-4fdef0ad0ca0" config-ref="Global_ActiveMQ_Config" destination="jsonqueue" ackMode="IMMEDIATE" maximumWait="5" maximumWaitUnit="MINUTES">
+			<jms:consumer-type >
+				<jms:queue-consumer />
+			</jms:consumer-type>
+		</jms:consume>
+		<logger level="INFO"
+			doc:name="Logs the payload coming from the jms consumer"
+			doc:id="c05d9fc9-a517-4c7c-ac3b-e8622ca38361" message="#[payload]" />
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="Handles HTTP namespace error" doc:id="0cff098c-28a8-4104-884e-2876e917ed91" when="#[error.errorType.namespace == 'HTTP']">
+				<logger level="INFO" doc:name="Logger" doc:id="a19147e7-4319-4c43-a87e-b0d9f99b727b" message="#[error.errorType.identifier]"/>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="Handles JMS or ANY name space errors" doc:id="4febced7-9523-444b-bb4c-3056d09aa5d2" when="#[error.errorType.namespace == 'JMS' or error.errorType.namespace == 'ANY']">
+				<set-payload value="on error propagate in the flow " doc:name="Set Payload" doc:id="b4188b89-54fc-4ef1-b1c3-5330a8efeb18" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="jmspublishtoreplyqueue" doc:id="a8e92f2e-1bb9-49aa-9a3a-97172cd876ec">
+		<http:listener doc:name="Listener"
+			doc:id="35bf5c7b-350c-4785-9e3c-bf1f75d4df8e" config-ref="Global_HTTP_Listener"
+			path="/replyqueuepublisher" />
+			<jms:publish doc:name="Publish the json payload to replyqueue"
+			doc:id="e0f7bebe-337e-4b6b-b6f7-214029b4d889" config-ref="Global_ActiveMQ_Config"
+			destination="replyqueue" priority="1" timeToLive="50" timeToLiveUnit="MINUTES" sendCorrelationId="ALWAYS" persistentDelivery="true">
+			<jms:message sendContentType="false">
+			</jms:message>
+		</jms:publish>
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="Handles HTTP namespace error" doc:id="b11653d4-a3ea-444a-91f6-e40e2fa1fa36" when="#[error.errorType.namespace == 'HTTP']">
+				<logger level="INFO" doc:name="Logger" doc:id="3cbc6f15-932f-4343-80eb-539ac6b6f70f" message="#[error.errorType.identifier]"/>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="Handles JMS or ANY name space errors" doc:id="bc948c1d-c2fd-4353-8fef-09eed73a3d43" when="#[error.errorType.namespace == 'JMS' or error.errorType.namespace == 'ANY']">
+				<set-payload value="on error propagate in the flow " doc:name="Set Payload" doc:id="9a84079a-23f0-4de3-abc5-a4ad01bf6a8f" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="jmspublishconsumeflow" doc:id="36e426c9-9f0f-4aba-b942-8a9cf54770fe">
+		<http:listener doc:name="Listener"
+			doc:id="157b8501-98ca-4e85-b9ff-5540cdb32d1e" config-ref="Global_HTTP_Listener"
+			path="/queuepublishconsume" />
+		<jms:publish-consume doc:name="Publish consume" doc:id="21c8c4a1-911d-4b3f-ad1b-f11ca50ccba0" config-ref="Global_ActiveMQ_Config" destination="jsonqueue" sendCorrelationId="ALWAYS">
+			<jms:message >
+				<jms:reply-to destination="replyqueue" />
+			</jms:message>
+			<jms:consume-configuration maximumWait="30" maximumWaitUnit="SECONDS" />
+		</jms:publish-consume>
+		<logger level="INFO"
+			doc:name="Logs the payload coming from the jms publish consumer"
+			doc:id="765b3d69-f7e4-41db-b9d4-99c14c077d5c" message="#[payload]" />
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="Handles HTTP namespace error" doc:id="7b88f8ab-6136-46eb-8358-54b4a6312d05" when="#[error.errorType.namespace == 'HTTP']">
+				<logger level="INFO" doc:name="Logger" doc:id="795e6e4b-05bd-43b4-a437-4294ebbc86b9" message="#[error.errorType.identifier]"/>
+			</on-error-continue>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="Handles JMS or ANY name space errors" doc:id="dc5ad878-41df-46c1-9f49-196e943b9a89" when="#[error.errorType.namespace == 'JMS' or error.errorType.namespace == 'ANY']">
+				<set-payload value="on error propagate in the flow " doc:name="Set Payload" doc:id="1beeed23-dad1-46f1-8a8f-8809a5ce2006" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="HttpRequestFlow" doc:id="g844b792-ca31-4a2d-b046-4366a6741251" >
+		<http:request method="GET" doc:name="Request" doc:id="db213556-ec14-49a9-81e0-8ec2a1588c3e" config-ref="Global_Httpbin_Request" path="/post"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3844fe11-6526-472b-9260-7268c46fae4b" when="#[error.errorType.namespace == 'HTTP']">
+				<logger level="INFO" doc:name="Logger" doc:id="af3eac92-f4b3-4c1a-83e5-9df8c840b04f" />
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="03062cab-0a11-4988-b173-6baa8a5cb4e2" when="#[error.errorType.namespace == 'HTTP']">
+				<logger level="INFO" doc:name="Logger" doc:id="19fb64cd-9e32-4320-84a0-9f450ca8c1b6" message="#[error.errorType.identifier]"/>
+			</on-error-propagate>
+			
+		</error-handler>
+	</flow>
+</mule>

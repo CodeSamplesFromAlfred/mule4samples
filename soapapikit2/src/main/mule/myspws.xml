@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<apikit-soap:config name="soap_api_kit" service="TshirtService"
+		port="TshirtServicePort" doc:name="APIKit for SOAP Configuration"
+		doc:id="532b500b-c75b-4586-8e0b-066f67e094ec" address="http://localhost:8081/tshirtService"
+		wsdlLocation="api/tshirt2.wsdl" />
+	<http:listener-config name="HTTP_Listener_config"
+		doc:name="HTTP Listener config" doc:id="efea9e45-114e-45f9-a9c0-eb021357001e">
+		<http:listener-connection host="0.0.0.0"
+			port="8081" />
+	</http:listener-config>
+	<flow name="myspwsFlow" doc:id="b3af40a3-733a-464c-9bc0-02b34b4fbf4a">
+		<http:listener doc:name="Listener"
+			doc:id="bbb642e3-2e39-47ac-827c-b9ab053a1461" config-ref="HTTP_Listener_config"
+			path="/tshirtService" />
+		<apikit-soap:router doc:name="SOAP Router"
+			doc:id="71544662-6cab-46ea-912d-0acf60bbaba6" config-ref="soap_api_kit">
+			<apikit-soap:attributes><![CDATA[#[%dw 2.0
+              output application/java
+              ---
+              {
+                  headers: attributes.headers,
+                  method: attributes.method,
+                  queryString: attributes.queryString
+            }]]]></apikit-soap:attributes>
+			</apikit-soap:router>
+	</flow>
+	<flow name="OrderTshirt:\soap_api_kit">
+		<ee:transform
+			doc:name="Get soap request header,body and attachments.Assign this to variables"
+			doc:id="fc28377a-a077-4128-a009-ac11aa104d20">
+			<ee:variables>
+				<ee:set-variable variableName="orderTshirtBody"><![CDATA[%dw 2.0
+output application/xml
+---
+payload.body]]></ee:set-variable>
+				<ee:set-variable variableName="orderTshirtHeader"><![CDATA[%dw 2.0
+output application/java
+---
+payload.headers]]></ee:set-variable>
+				<ee:set-variable variableName="orderTshirtAttachments"><![CDATA[%dw 2.0
+output application/java
+---
+payload.attachments]]></ee:set-variable>
+			</ee:variables>
+
+		</ee:transform>
+		<logger level="INFO" doc:name="logs a soap request header"
+			doc:id="b46e2420-063e-4b0d-b2f0-f85fb898ea45"
+			message="#[output application/java 
+ns tsh http://mulesoft.org/tshirt-service
+--- 
+payload.headers.tsh#AuthenticationHeader.apiKey]" />
+		<ee:transform doc:name="Set soap response"
+			doc:id="a7f8d98d-03b5-4691-b672-1db5d7116156">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+ns ns0 http://mulesoft.org/tshirt-service
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+{
+	 soap#headers: {
+        "APIUsageInformation": {
+            APIUsageInformation: 10
+        } write "application/xml"
+    },
+	soap#body : {
+		ns0#OrderTshirtResponse: {
+			orderId: '98238WEW212'
+		}
+	} write "application/xml"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue" doc:id="46f746e0-c359-4261-9801-576421f3fff1">
+				<ee:transform doc:id="7671e4dc-cca0-476b-9397-145f45f975ed">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+ns soap http://schemas.xmlsoap.org/soap/envelope
+---
+{
+    body: {
+        soap#Fault: {
+            faultcode: "soap:Server",
+            faultstring: "Error while executing operation [OrderTshirt]"
+        }
+    } write "application/xml"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

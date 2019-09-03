@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+
+	<flow name="roundrobinrouterFlow" doc:id="8bd91da4-d4bb-49eb-af5e-2281ebc9cdb7" >
+		<http:listener doc:name="Listener" doc:id="2e650e16-9129-41ee-9a80-b8a0bc5e95bb" config-ref="Global_HTTP_Listener" path="/roundrobin"/>
+		<round-robin doc:name="Round Robin router randomly selects a route to redirect the mule event,it will not pick the previous route which it picked for routing" doc:id="469c97d7-9fe6-4848-854f-002aa966e0eb" tracking:enable-default-events="true">
+			<route >
+				<logger level="INFO" doc:name="logger in the first route" doc:id="05fcec88-5b33-46ef-a3fe-a7d0018a26b6" message="#['1st route']"/>
+			</route>
+			<route >
+				<logger level="INFO" doc:name="logger in the second route" doc:id="6af52b2d-6939-4df4-b515-82be2c351fa3" message="#['2cnd route']" />
+			
+</route>
+			<route >
+				<logger level="INFO" doc:name="logger in the third route" doc:id="f0589e2a-c4b6-49c7-9d68-dd201dff4ac1" message="#['3rd route']"/>
+			</route>
+		</round-robin>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="19c259d3-327b-4fd1-99a5-0b28cdf5ec5a">
+				<set-payload value="#[error.detailedDescription]" doc:name="Set errorDescription as payload" doc:id="fe54d776-34ac-46b3-9f22-92f9cda0d88c" />
+			</on-error-continue>
+		</error-handler>
+	
+</flow>
+</mule>

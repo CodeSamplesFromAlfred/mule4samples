@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<flow name="vmlistenerflow" doc:id="09ffb00f-6d67-467c-a388-f98d1a0bec90" >
+		<vm:listener doc:name="Listener to vm queue1" doc:id="6aae7cc8-864c-47e8-882c-94ef2f89f51b" config-ref="Global_VM_Config" queueName="queue1" numberOfConsumers="10" timeout="3">
+		</vm:listener>
+		<ee:transform doc:name="convert the byte array payload to json" doc:id="db211577-d2e8-4d63-8193-d1033e5541fc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Get all names in a array " doc:id="eed0bc35-f7a0-4a02-86b7-57eae58394ad" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map $.name]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<scripting:execute engine="groovy" doc:name="execute 1 second delay" doc:id="84950311-62ed-4f98-9637-fefd4d851717" >
+			<scripting:code >sleep(1000)
+return message</scripting:code>
+		</scripting:execute>
+	</flow>
+	<flow name="vmpublishflow" doc:id="28ffed9f-4927-451c-b5db-4516ec5efa72" >
+		<http:listener doc:name="Listener" doc:id="fc69e48e-d229-49a3-a1cf-16d9b51fdb5b" config-ref="Global_HTTP_Listener" path="/vmpublishconsume"/>
+		<set-variable value="#[payload[0].name]" doc:name="Set myname Variable" doc:id="73cc4dfd-8db6-4b03-9f60-734d7cd83a1e" variableName="myname"/>
+		<vm:publish doc:name="Asynchronously publish the payload to queue1" doc:id="3ece46cd-5351-4725-8376-7344df303abc" config-ref="Global_VM_Config" queueName="queue1">
+		</vm:publish>
+		<logger level="INFO" doc:name="Logs the response from the listener in the flow vmlistenerflow" doc:id="4351c3fc-85d3-4a92-9918-0f693a616c8f" message="#[payload]" />
+		<vm:publish doc:name="Asynchronously publish the payload publish to queue3" doc:id="78739056-6d01-48f9-a74b-69502d742903" config-ref="Global_VM_Config" queueName="queue3"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="880d68f3-37d1-46f9-abbf-74ddee3aff58" when="#[error.errorType.namespace == 'VM']">
+				<set-payload value="#[error.detailedDescription]" doc:name="Set the errordescription as payload" doc:id="fae27308-7d8f-44ed-966d-6104683dbe51" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="vmconsumeflow" doc:id="98f1bc75-ad37-4e13-90e6-7b06bdfd393f" >
+		<http:listener doc:name="Listener" doc:id="8ee3de5c-4250-4fe4-8a9b-3e91ff9d0c10" config-ref="Global_HTTP_Listener" path="/vmconsume"/>
+		<vm:consume doc:name="Consume from persistent vm queue3" doc:id="3c84be65-d9cc-4597-bb1a-5c7cdca0348d" config-ref="Global_VM_Config" queueName="queue3" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b5f23733-1cd4-4ac1-bb58-a877c3e50262" type="VM:EMPTY_QUEUE">
+				<set-payload value="#[error.errorType.namespace ++' '++ error.errorType.identifier]" doc:name="Set  the error namespace and error identifier as Payload" doc:id="4236b064-9445-4ea3-a723-1149d7990528" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

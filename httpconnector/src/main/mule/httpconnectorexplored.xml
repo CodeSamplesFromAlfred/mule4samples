@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="makehttprequestflow" doc:id="ce6ccc57-df55-4274-8693-58fe3aa296f3" >
+		<http:request method="POST" doc:name="Http request to httpbin post service" doc:id="abd1c6a3-ed8a-47aa-8363-ee2a98356741" config-ref="Global_Httpbin_Request" path="/post" target="httpresponse">
+			<http:body><![CDATA[#[%dw 2.0
+output application/xml
+---
+details:{
+	'name':vars.nameFromJson,
+	'randominfo':'12' as Number,
+	'city':vars.cityFromXml
+}]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	name : vars.nameFromJson
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	city : vars.cityFromXML
+}]]]></http:query-params>
+		</http:request>
+	</flow>
+	<flow name="readattachments" doc:id="bdd22fe0-2234-454b-b366-ef596ede1e58">
+		<http:listener doc:id="c631a758-fdc4-43c9-b01e-39605cb5ccf5" config-ref="Global_HTTP_Listener" path="/httptest" />
+		<set-variable value="#[attributes.headers.apikey]"
+			doc:name="Set Variable" doc:id="4c67ff53-0f52-49f3-867a-106e4a49852a"
+			variableName="key" />
+		<ee:transform doc:name="Get the attachment content from attachment"
+			doc:id="2a50898a-f32e-1081-ae6b-10175c018108">
+			
+			<ee:variables >
+				<ee:set-variable resource="dw_config/getJSONAttachment.dwl" variableName="jsonContent" /> 
+			
+				<ee:set-variable resource="dw_config/getXMLAttachment.dwl" variableName="xmlContent" />
+			</ee:variables>
+		</ee:transform>
+		
+		<ee:transform doc:name="Look in to retrieved data" doc:id="3341485e-9b31-43cf-a46f-449a95aeea1b" >
+			
+			<ee:variables >
+				<ee:set-variable resource="dw_config/getNameFromXML.dwl" variableName="cityFromXML" />
+				<ee:set-variable resource="dw_config/getNameFromJson.dwl" variableName="nameFromJson" />
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="13093bb5-4f87-4f21-b5d3-b5821fa30fe3" name="makehttprequestflow" />
+		<logger level="INFO" doc:name="Logger" doc:id="661d79fc-5f84-4393-8565-c98f13ca3fd7" message="#[payload]"/>
+	</flow>
+	<flow name="httpbasicauthflow" doc:id="c969a0b3-c78a-46d8-b543-b5f0db13ef6d" >
+	 
+		<http:listener doc:name="Listener" doc:id="08202c30-7554-4273-ad1a-25ba78e567c3" config-ref="Global_HTTP_Listener" path="/basichttpauth"/>
+		<http:request method="GET" doc:name="Make a github request" doc:id="2f2bb940-082e-4d5e-ba67-f64736f47dc2" config-ref="Gobal_github_user_request" path="/user"/>
+		<ee:transform doc:name="Transform Message" doc:id="7f68f6a8-6edf-4513-a205-03c7ac347138" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	
+</mule>

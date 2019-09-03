@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="untillsuccessfullFlow" doc:id="b5a61218-6e71-457d-bd8d-99dc6766d5e3" >
+		<http:listener doc:name="Listener" doc:id="b411b698-3e21-4f09-acef-b65e9355aa64" config-ref="Global_HTTP_Listener" path="/untillsuccessful"/>
+		<until-successful maxRetries="2" doc:name="Until Successful" doc:id="af1c8677-f5f6-4c70-a446-48fd8566a386" millisBetweenRetries="5000">
+			<http:request method="DELETE" doc:name="Request" doc:id="ca93255d-b7b5-4078-be52-5175b24ea264" config-ref="Global_Httpbin_Request" url="https://jsonplaceholder.typicode.com/users"/>
+		</until-successful>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9313943c-f724-41a1-bb33-6be2dedf93d6" when="#[error.errorType.identifier == 'RETRY_EXHAUSTED']">
+				<set-payload value='#[error.detailedDescription]' doc:name="Set Payload" doc:id="ee0ddd2c-f1d3-4fd2-837c-d3e0f692c910" mimeType="application/json"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

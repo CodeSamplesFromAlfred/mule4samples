@@ -1,0 +1,55 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://example.com/root.json",
+  "type": "object",
+  "title": "The Root Schema",
+  "required": [
+    "name",
+    "profession",
+    "worthness",
+    "myfield"
+  ],
+  "properties": {
+    "name": {
+      "$id": "#/properties/name",
+      "type": "string",
+      "title": "The Name Schema",
+      "default": "",
+      "examples": [
+        "alfred"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "profession": {
+      "$id": "#/properties/profession",
+      "type": "string",
+      "title": "The Profession Schema",
+      "default": "",
+      "examples": [
+        "trenchdigger"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "worthness": {
+      "$id": "#/properties/worthness",
+      "type": "string",
+      "title": "The Worthness Schema",
+      "default": "",
+      "examples": [
+        "all_in_all"
+      ],
+      "pattern": "^(.*)$"
+    },
+    "myfield": {
+      "$id": "#/properties/myfield",
+      "type": "string",
+      "title": "The Myfield Schema",
+      "default": "",
+      "examples": [
+        "akey"
+      ],
+      "pattern": "^(.*)$"
+    }
+  }
+}

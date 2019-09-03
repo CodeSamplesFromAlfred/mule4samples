@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="input_payload" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="jsonmeta" format="json">
+      <types:shape format="weave" example="examples/jsonarray.json"><![CDATA[%dw 2.0
+type jsonmeta = Array<{|
+  name: String, 
+  city: String, 
+  age: Number {"typeId": "int"}, 
+  profession: String, 
+  dob: String
+|}> {"MetadataFormat": "json",
+"example": "[{\"name\":\"renju\",\"city\":\"bengaluru\",\"age\":27,\"profession\":\"engineer\",\"dob\":\"18\/05\/1985\"},{\"name\":\"alfred\",\"city\":\"bengaluru\",\"age\":33,\"profession\":\"dreamer\",\"dob\":\"18\/10\/1985\"},{\"name\":\"sam\",\"city\":\"bengaluru\",\"age\":35,\"profession\":\"mediaperson\",\"dob\":\"18\/05\/1985\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="outputmetadata" format="json">
+      <types:shape format="weave" example="examples/jasonSample.json"><![CDATA[%dw 2.0
+type outputmetadata = {| name: String |} {"MetadataFormat": "json",
+"example": "{\"name\":\"alfred\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#f869bc3c-750a-48aa-9a0c-a423006255d5"/>
+</types:mule>

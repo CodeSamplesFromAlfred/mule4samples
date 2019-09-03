@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/os	http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	
+	<flow name="idempotentflow" doc:id="0b877217-9346-466e-925b-43a06b4f98f7" >
+		<http:listener doc:name="Listener" doc:id="019edf71-2237-4f68-ab94-bf1cac6597f4" path="/idempotentvalid" config-ref="Global_HTTP_Listener"/>
+		<idempotent-message-validator doc:name="Idempotent Message Validator" doc:id="54825bf7-93cd-4cc7-8c2d-aa24f7ad1875" idExpression="#[%dw 2.0
+    output text/plain
+    import dw::Crypto
+    ---
+    Crypto::hashWith(upper(payload.name),'MD5')]">
+			<os:private-object-store maxEntries="20000" entryTtl="30" entryTtlUnit="MINUTES" expirationInterval="5" />
+		</idempotent-message-validator>
+		<logger level="INFO" doc:name="Logs the payload" doc:id="d1c7cf7a-e455-46d6-9917-05b249f9be81" message="#[payload]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="099a8a92-2459-4691-a358-7d46c2100546" type="MULE:DUPLICATE_MESSAGE">
+				<set-payload value="#['Duplicate request']" doc:name="Set a error message as payload" doc:id="a35ea0ab-b27f-4ff8-b6ab-18f280bd2fa5" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

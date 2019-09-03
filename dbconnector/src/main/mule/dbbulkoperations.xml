@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="dbbulkinsert" doc:id="7c623be1-3599-44bb-ac3b-a85bb8985ff2" >
+		<http:listener doc:name="Listener" doc:id="c4c846e7-0866-44ad-9fff-22fb86d01e45" config-ref="HTTP_listener_config1" path="/dbbulkinsert"/>
+		<db:bulk-insert doc:name="Bulk insert" doc:id="ce5a317e-1494-4bcb-940c-4a4574b289ad" config-ref="Database_Config">
+			<db:sql >#[&quot;insert into products (product_id,price,product_name) values (:product_id,:price,:product_name)&quot;]</db:sql>
+		</db:bulk-insert>
+		<logger level="INFO" doc:name="Logger" doc:id="42d2fa75-1f31-44b6-8ed9-fafb0ad0270f" message="#[payload]"/>
+	</flow>
+	<flow name="dbbulkupdate" doc:id="919828ee-079f-47a0-8a9a-454632f35e1a" >
+		<http:listener doc:name="Listener" doc:id="39dc199d-2118-46f0-8bd4-406903afb68b" config-ref="HTTP_listener_config1" path="/dbbulkupdate"/>
+		<db:bulk-update doc:name="Bulk update" doc:id="0f424ec1-54b8-427a-ab1b-eb3c2cc3beec" config-ref="Database_Config">
+			<db:bulk-input-parameters ><![CDATA[#[payload.root.*tv map {
+	"discounted_price":$.discounted_price,
+	"current_price":$.current_price,
+	"name":$.name
+}]]]></db:bulk-input-parameters>
+			<db:sql >#[&quot;update products set price = :discounted_price where product_name = :name and price &gt;= :current_price&quot;]</db:sql>
+		</db:bulk-update>
+		<logger level="INFO" doc:name="Logger" doc:id="6038046b-f7e5-4bae-b2af-42fe05f38735" message="#[payload]"/>
+	</flow>
+</mule>

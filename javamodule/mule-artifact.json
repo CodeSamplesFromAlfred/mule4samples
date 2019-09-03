@@ -1,0 +1,12 @@
+{
+    "name": "javamodule",
+    "minMuleVersion": "4.1.4",
+    "classLoaderModelLoaderDescriptor": {
+        "id": "mule",
+        "attributes": {
+            "exportedPackages": [
+                "com.alfred"
+            ]
+        }
+    }
+}

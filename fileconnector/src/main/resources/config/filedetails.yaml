@@ -1,0 +1,9 @@
+#===================================
+# File config details
+#===================================
+file:
+  copy_path: 'I:\Mule\mule_workspace_2\fileconnectorexplored\src\main\resources\requestsamples\'
+  move_path: 'I:\Mule\mule_workspace_2\fileconnectorexplored\src\main\resources\destination\'
+  copy_destination: 'I:\Mule\mule_workspace_2\fileconnectorexplored\src\main\resources\destination'
+  delete_folder: 'I:\Mule\mule_workspace_2\fileconnectorexplored\src\main\resources\destination\'
+  read_folder: 'I:\Mule\mule_workspace_2\fileconnectorexplored\src\main\resources\requestsamples\'

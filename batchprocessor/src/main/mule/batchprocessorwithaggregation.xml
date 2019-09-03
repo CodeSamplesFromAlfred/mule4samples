@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	
+	<flow name="batchprocessaggregationFlow" doc:id="17534c1a-af98-47b8-bb44-975d49a4a4ab" initialState="started">
+		<scheduler doc:name="Scheduler" doc:id="2472d003-77a3-4281-b917-a51f8c758f96" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="3" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<set-payload value="#[[1,2,3,4,5,6]]" doc:name="Set Payload" doc:id="5e82d092-5193-4119-a585-69a61b26e6d9" />
+		<set-variable value="#[sizeOf(payload)]" doc:name="Set sizeOfPayload variable" doc:id="cb512839-d29a-4278-b527-ebe6e539cf62" variableName="sizeOfPayload"/>
+		<batch:job jobName="batchprocessagreggation_job" doc:id="9d75afa7-c762-464a-833b-dd91ea03254e" >
+			<batch:process-records >
+			
+				<batch:step name="Batch_step1" doc:id="901ee460-9bdf-41cf-9a59-88a2a3c9c487" acceptExpression="#[(payload mod 2) == 0]">
+					<set-variable value="#[payload]" doc:name="Set Variable" doc:id="af10b643-7c36-4cbe-b2b4-82fd4bce93c7" variableName="payloadValue"/>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="8ecf02c7-e404-4493-9b40-0cf24db2997c" size="2">
+						<logger level="INFO" doc:name="Logger" doc:id="e561165b-5241-46a1-bd32-7fd843fd378b" message="#[payload]"/>
+					</batch:aggregator>
+				
+</batch:step>
+				<batch:step name="Batch_Step" doc:id="0d6d602e-668a-4b6f-83fb-08c7fe87f254" >
+					<logger level="INFO" doc:name="Logger" doc:id="84fc1b0c-ee70-4d54-b70b-511b8d7719b9" />
+				</batch:step>
+			
+</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logs the payload at on complete phase" doc:id="df92328e-f8bf-4a75-9e20-e0898aa68175" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+</mule>

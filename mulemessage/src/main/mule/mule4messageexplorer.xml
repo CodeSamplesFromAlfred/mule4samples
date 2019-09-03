@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="31425bf6-d4c1-4b27-9e78-2427d367ed2b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="RandomListnerFlow" doc:id="c931ac44-03e7-464f-8903-dd25ad91e2df" >
+		<http:listener doc:name="Listens to port 8081" doc:id="b9d07bd2-a736-47c2-b1e7-8b1611023de8" path="/alfatest" allowedMethods="POST" config-ref="HTTP_Listener_config">
+			<http:response statusCode="#[201]" reasonPhrase="#['successfully submitted']">
+				<http:body ><![CDATA[#[attributes.queryParams.name]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	key : attributes.headers."userkey"
+}]]]></http:headers>
+			</http:response>
+		</http:listener>
+		<set-variable value="#[attributes.headers]" doc:name="Get the http headers using dataweave expression and set it as myHeaders variable" doc:id="15251b0c-53b3-4be0-a263-7893c9b2bb9b" variableName="myHeaders" />
+		<logger level="INFO" doc:name="log the mule message" doc:id="9b588637-3989-4b2d-812d-01ea42c834d0" message='#[message]'/>		
+		<logger level="INFO" doc:name="log the incoming header using attributes" doc:id="d5ef9eee-fd0c-4d00-9f21-b1c9a79b5668" message='#[attributes.headers."userkey"]'/>
+		<logger level="INFO" doc:name="log the query params using attributes" doc:id="a2917df5-d95e-4bc9-a7d2-a86d2a928392" message='#[attributes.queryParams.name]'/>
+	</flow>
+</mule>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="choiceoperationsFlow" doc:id="fe46aa89-3817-4059-9fba-1d50cd1b77ac" >
+		<http:listener doc:name="Listener" doc:id="155b99c2-d50e-4e89-a395-90f7195f9369" config-ref="Global_HTTP_Listener" path="/choicerouter"/>
+		<choice doc:name="Choice" doc:id="f03e5e82-3424-4b23-a570-4c5c43d2e5f3" >
+			<when expression="#[payload.age == 30 and payload.firstName == 'alfred']">
+				<set-payload value="#['Name is ' ++ payload.firstName]" doc:name="Set Payload" doc:id="2c374e81-ec62-4752-ae95-6fa278938a48" />
+			</when>
+			<when expression="${file::dw_config//ageLessThan30Check.dwl}">
+				<set-payload value="#['Name is ' ++ payload.firstName]" doc:name="Set Payload" doc:id="d605b459-b0d2-417b-a2b9-46ceddbe2e2a" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="12274530-8ef4-4858-9ba5-0aeb2b949b66" message="#[payload]"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="7120b9f0-d2f8-4e40-baee-6f321395f9fc" message="#[payload]"/>
+	</flow>
+</mule>

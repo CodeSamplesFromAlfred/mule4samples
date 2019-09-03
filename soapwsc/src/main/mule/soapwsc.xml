@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="1481686a-50a8-4194-80cd-87e67a27d852" >
+		<wsc:connection wsdlLocation="api/tshirt2.wsdl" port="TshirtServicePort" service="TshirtService" address="http://localhost:8888/tshirtService"/>
+	</wsc:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="1fdd3838-f661-4346-aa10-999bb3b18793" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="consumesoapserviceflow" doc:id="639cc2a7-ce6c-4e6c-8a7b-598bd49e2171" >
+		<http:listener doc:name="Listener" doc:id="2f4a13db-f732-4d43-87b0-5e1b4cf5ae2f" config-ref="HTTP_Listener_config" path="/wsconsume"/>
+		<ee:transform doc:name="Create soap body and header for OrderTshirt request" doc:id="9a894c58-2327-46f8-938c-848c17d631ca" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns tsh http://mulesoft.org/tshirt-service
+---
+{
+		tsh#OrderTshirt:{
+	size:payload.size,
+   email:payload.email,
+   name:payload.name,
+   address1:payload.address1,
+   address2:payload.address2,
+   city:payload.city,
+   stateOrProvince:payload.state,
+   postalCode:payload.zipCode,
+   country:payload.country
+		}
+	}
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="soapRequestHeaders" ><![CDATA[%dw 2.0
+input payload application/json
+output application/xml
+ns tsh http://mulesoft.org/tshirt-service
+---
+headers:{
+	tsh#AuthenticationHeader:{
+		apiKey:attributes.apikey
+	}
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<wsc:consume doc:name="Consume the ws TshirtService,operation OrderTshirt" doc:id="83d54e00-fffb-4fb1-8eab-f3a40263ccc0" config-ref="Web_Service_Consumer_Config" operation="OrderTshirt">
+			<wsc:message >
+				<wsc:headers ><![CDATA[#[vars.soapRequestHeaders]]]></wsc:headers>
+			</wsc:message>
+		</wsc:consume>
+		<ee:transform doc:name="Get the soap body from soap response" doc:id="a4cbe1ee-bd97-4763-a8ae-d3d471158320" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+payload.body]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="soapfaultflow" doc:id="3cdf1d83-c04b-45c4-b975-e1fd35efab0d" >
+		<http:listener doc:name="Listener" doc:id="0fb56d06-128e-4942-9e37-7e9b1b7cbb95" config-ref="HTTP_Listener_config" path="/wsfault"/>
+		<ee:transform doc:name="Create soap body and header for the ListInventory request" doc:id="c1606e4e-f1a0-4528-8a5f-d4919768a187" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns tsh http://mulesoft.org/tshirt-service
+---
+{
+		tsh#ListInventory: null
+	}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume doc:name="Consume the ws TshirtService,operation ListInventory" doc:id="0ff1f425-d856-4557-938e-4aa1b2a62949" config-ref="Web_Service_Consumer_Config" operation="ListInventory">
+		</wsc:consume>
+		<ee:transform doc:name="Get the soap body from soap response" doc:id="2fc72fa1-97f7-45ea-8b28-566b85f16cd0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+payload.body]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="56203943-430e-4cae-9fad-991e432eef9d" type="WSC:SOAP_FAULT" when="#[error.errorType.namespace == 'WSC']">
+				<logger level="INFO" doc:name="Logger" doc:id="b0bccbd7-469c-470d-9029-ae4fc0472f15" />
+			</on-error-continue>
+		</error-handler>
+	
+</flow>
+</mule>

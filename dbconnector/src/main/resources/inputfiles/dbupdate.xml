@@ -1,0 +1,22 @@
+<root>
+<tv>
+<discounted_price>11000</discounted_price> 
+    <current_price>17000</current_price> 
+    <name>SonyTV</name>	
+</tv>
+<tv>
+<discounted_price>11000</discounted_price> 
+    <current_price>17000</current_price> 
+    <name>PanasonicTV</name>	
+</tv>
+ <tv>
+<discounted_price>11000</discounted_price> 
+    <current_price>17000</current_price> 
+    <name>SamsungTV</name>	
+</tv>
+<tv>
+<discounted_price>14000</discounted_price> 
+    <current_price>17000</current_price> 
+    <name>XiaomiTV</name>	
+</tv>
+</root>

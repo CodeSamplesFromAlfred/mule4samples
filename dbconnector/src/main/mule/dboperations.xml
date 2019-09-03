@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="43c013ba-7d84-4e5c-862b-83b88f568b56" >
+		<db:generic-connection url="jdbc:postgresql://localhost:5432/muleTraining1" driverClassName="org.postgresql.Driver" user="postgres" password="password" />
+	</db:config>
+	<http:listener-config name="HTTP_listener_config1" doc:name="HTTP Listener config" doc:id="bu01af47-ea7d-4b75-9a3c-e5b12dd293f0" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="32548603-0826-40ae-b064-e6c15c09d431" file="config/dbQueries.yaml" />
+	<flow name="dbinsert" doc:id="43cbd1fe-4898-4d05-b114-06c47d8a7506" >
+		<http:listener doc:name="Listener" doc:id="9fa9f745-2151-45d4-94dc-7020005508f4" config-ref="HTTP_listener_config1" path="/dbinsert"/>
+		<logger level="INFO" doc:name="Logger" doc:id="38657799-8068-4186-a1c6-6ca26d1f2458" message="#[p('db.insert_query')]"/>
+		<db:insert doc:name="Insert  into table" doc:id="b22061a8-0ad8-4795-b5cd-23d5d42d196d" config-ref="Database_Config">
+			<db:sql >#[&quot;insert into $(payload.details.tablename) (id,first_name,last_name) values (:Id,:first_name,:last_name)&quot;]
+
+</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'Id':payload.details.Id as Number,
+	'first_name':payload.details.first_name,
+	'last_name':payload.details.last_name
+}]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="778b3eec-1c8c-460a-b92d-4c5c5c27d769" message="#[payload]"/>
+	</flow>
+	<flow name="dbselect" doc:id="bffa29c7-822c-4f50-89c2-90c9ae1ed157" >
+		<http:listener doc:name="Listener" doc:id="d2efe2b1-6980-4266-8e29-70382b0290ba" config-ref="HTTP_listener_config1" path="/dbselect"/>
+		<db:select doc:name="Select the tuples from student table" doc:id="efd48bb1-96da-4a09-95b5-18925138116e" config-ref="Database_Config" target="dbResult">
+			<db:sql >#[&quot;select * from $(payload.table) where Id  &gt; :id&quot;]</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'id':payload.userid as Number,
+	'name':payload.first_name
+}]]]></db:input-parameters>
+		</db:select>
+		
+		<ee:transform doc:name="Transform Message" doc:id="2eg28c06-521a-4826-9625-3f849a47ab53">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable resource="dw_config/transformDboutput.dwl" variableName="transformDboutput" />
+				<ee:set-variable resource="dw_config/dbOutPut.dwl" variableName="dbOutPut" />
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="065510fa-d5e4-406c-bb4e-2fefd6c25762" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/reduceFunction.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="1fd54000-482a-4fd1-9326-3715e225d21f" message="#[payload]"/>
+	</flow>
+	<flow name="dbdelete" doc:id="db7d165f-a862-46dd-a1ae-23331569b1d6" >
+		<http:listener doc:name="Listener" doc:id="f99e9cd8-d573-4ce1-9a4c-a357c34fa4e6" config-ref="HTTP_listener_config1" path="/dbdelete"/>
+		<db:delete doc:name="Delete" doc:id="8b13e22c-a7e7-44ed-95f3-bdf1f976933c" config-ref="Database_Config">
+			<db:sql >#['delete from student where id=:id']		</db:sql>
+			<db:input-parameters ><![CDATA[#[id:payload.studentid]]]></db:input-parameters>
+		</db:delete>
+		<logger level="INFO" doc:name="Logger" doc:id="80360b38-6593-4fe7-9fea-458a31d28d9f" message="#[payload]"/>
+
+	
+	</flow>
+	<flow name="dbupdate" doc:id="12fb47a9-5c48-420a-98b8-731a63a44743" >
+		<http:listener doc:name="Listener" doc:id="6623baca-c490-4839-9eb6-9731341bb948" config-ref="HTTP_listener_config1" path="/dbupdate"/>
+		<foreach doc:name="For Each" doc:id="ca1ce6a9-0b94-4a5d-a4f3-a0e340751d55" collection="payload">
+			<db:update doc:name="Update" doc:id="9837cd12-9867-4907-801b-6f7f385f88ce" config-ref="Database_Config">
+			<db:sql>#[&quot;update products set price = :discounted_price where product_name = :name and price &gt;= :current_price&quot;]</db:sql>
+			<db:input-parameters><![CDATA[#[{
+	discounted_price:payload.discounted_price,
+	name:payload.name,
+	current_price:payload.current_price
+}]]]></db:input-parameters>
+		</db:update>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="a81bcabb-2e9f-40a4-ba5a-5520ce6bf593" message="#[payload]"/>
+	</flow>
+	<flow name="dboperationsFlow" doc:id="14812441-5f81-449c-87db-ed5aab9433d4" >
+		<db:listener table="employee" doc:name="On Table Row" doc:id="53105aa7-9c5e-48b4-b0ad-da76ab49a717" config-ref="Database_Config" watermarkColumn="timestamp" idColumn="emp_id">
+			<scheduling-strategy >
+				<fixed-frequency frequency="5000" />
+			</scheduling-strategy>
+		</db:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="1b38bb31-ca74-4b0f-89c9-2b468b8f5747" message="#[payload]"/>
+	</flow>
+</mule>

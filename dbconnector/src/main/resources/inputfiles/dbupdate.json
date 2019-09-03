@@ -1,0 +1,22 @@
+[
+	{
+    "discounted_price": 18000,
+    "current_price": 25000,
+    "name": "SonyTV"
+},
+{
+    "discounted_price": 15000,
+    "current_price": 17000,
+    "name": "PanasonicTV"
+},
+{
+    "discounted_price": 16000,
+    "current_price": 18000,
+    "name": "SamsungTV"
+},
+{
+    "discounted_price": 13000,
+    "current_price": 14000,
+    "name": "XiaomiTV"
+}
+]

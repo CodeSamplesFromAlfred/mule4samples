@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="dyanmicevaluateFlow" doc:id="9123a2ae-77f2-4582-9cc6-8165f2348729" >
+		<http:listener doc:name="Listener" doc:id="ca4d5cf1-3495-4ead-8e98-021580b5a8e5" config-ref="Global_HTTP_Listener" path="/dynamiceval"/>
+		<set-variable doc:name="Assign elevant dw script to myscript variable" doc:id="5ab49c7c-0456-4da9-87e9-ab219fd2a64c" variableName="myscript" value="#[if (attributes.headers.'content-type' == 'application/json')
+readUrl('classpath://dw_config//nameAsJson.dwl', 'text/plain')
+else
+readUrl('classpath://dw_config//nameAsXml.dwl', 'text/plain')]"/>
+		<set-payload value="#[vars.myscript]" doc:name="Set Payload" doc:id="37057f2d-e9a4-4ac3-be76-bb6db9cfdb37" />
+		<ee:dynamic-evaluate doc:name="Dynamic evaluation of the dw script stored in myscript variable" doc:id="9197c2df-802e-4849-a997-f1d63c83cd46" expression="#[vars.myscript]"/>
+		<logger level="INFO" doc:name="Logs the payload" doc:id="6669b41b-b470-40ea-8fdf-42ccfd79159c" message="#[payload]"/>
+	</flow>
+</mule>

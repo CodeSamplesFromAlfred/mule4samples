@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="validationFlow1" doc:id="664a6b04-1f20-4695-847e-4ca0897d0002" >
+		<http:listener doc:name="Listener" doc:id="93955d99-e825-4584-ab10-b6b17252ca4e" path="/validation1" config-ref="Global_HTTP_Listener"/>
+		<validation:is-blank-string doc:name="profession Is blank string" doc:id="04fa671f-4fbe-458e-b341-b2764902604c" value="#[payload.profession]" message="profession is suppose to be blank"/>
+		<validation:is-not-blank-string doc:name="firstName Is not blank string" doc:id="642bafac-783b-4d43-aaf1-cff43a7d0700" value="#[payload.firstName]" message="firstName is blank"/>
+		<validation:is-not-null doc:name="lastName Is not null" doc:id="1f8a519c-0331-4b5a-9cf4-80e8a836f384" value="#[payload.lastName]" message="lastName is null"/>
+		<logger level="INFO" doc:name="Logger" doc:id="6644cf29-9615-43f7-a148-360fe18eead7" message="#[payload]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="36aa1e26-71f7-49a5-861e-9b7c2962178e" when="#[error.errorType.namespace == 'VALIDATION']">
+				<set-payload value="#[error.detailedDescription]" doc:name="Set Payload" doc:id="6a50be30-24da-40ed-9dd9-2dc0cf80dc61" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="validationFlow2" doc:id="f8fa035a-fff9-44ba-97a7-8c7ecc1adcbf" >
+		<http:listener doc:name="Listener" doc:id="a8eb2e42-ccc0-4a72-9989-cc977c6771f2" config-ref="Global_HTTP_Listener" path="/validation2"/>
+		<validation:is-not-empty-collection doc:name="check payload is not an empty collection" doc:id="44967aff-10b5-41b4-b009-9518845682c9" message="payload is not collection"/>
+		<validation:matches-regex doc:name="checks payload[0].name matches regex" doc:id="bb5db98e-c0bf-4597-9d6a-2b883a4cc3aa" value="#[payload[0].name]" regex="^[a-zA-Z]+$" message="#[&quot;payload[0].name doesn't pass the regex&quot;]"/>
+		<validation:is-url doc:name="Is URL" doc:id="790026da-7d0e-4d8c-8d59-c526d3881594" url="#[payload[0].url]" message='#["payload[0].url field is not a url"]'/>
+	</flow>
+	<flow name="validationanyflow" doc:id="4b83cd80-6d15-49e5-b5df-002bf0576b09" >
+		<http:listener doc:name="Listener" doc:id="0045050d-7347-4bbb-88da-e69705aac544" config-ref="Global_HTTP_Listener" path="/validationany"/>
+		<validation:any doc:name="Any" doc:id="790b6e93-3dd5-4b72-bd99-925d5aff71d0" >
+			<validation:is-number doc:name="Is number" doc:id="8d6cf38f-4670-48ad-a73f-eb403c076abb" value="#[payload.age]" minValue="1" maxValue="25" numberType="INTEGER" message="payload.age is not a number between 1 and 25"/>
+			<validation:is-true doc:name="Is true" doc:id="3872ce64-9427-4c21-8555-c6f81816e324" expression="#[payload.myTrue]" message="payload.myTrue is not a true boolean"/>
+		</validation:any>
+	</flow>
+	<flow name="validationallflow" doc:id="eb59350f-0b8a-4846-ad50-179ea7fd0795" >
+		<http:listener doc:name="Listener" doc:id="4878633b-db9b-4bd9-b78a-4f1e7b5e2eab" config-ref="Global_HTTP_Listener" path="/validationall"/>
+		<ee:transform doc:name="Set time Variable" doc:id="969a895f-4fad-415e-80ce-003932af6f6e" >
+			
+			<ee:variables >
+				<ee:set-variable variableName="myTime" ><![CDATA[%dw 2.0
+output application/java
+---
+now() as  LocalDateTime]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<validation:all doc:name="All" doc:id="52b19945-58a8-4abf-a89e-69f57c440281" >
+			<validation:is-not-elapsed time="3" doc:name="Is not elapsed" doc:id="a702e95d-f24a-492a-a77c-c46f49957ade" timeUnit="SECONDS" since="#[vars.myTime]"/>
+			<validation:is-false doc:name="Is false" doc:id="9a0feef4-20c4-47a0-8c9b-de1944bd47b4" expression="#[payload.myfalse]" message="payload.myfalse is not false boolean "/>
+		</validation:all>
+	</flow>
+</mule>

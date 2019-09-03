@@ -1,0 +1,8 @@
+1) until successful scope demands the number of times the retry has to 
+attempted and the time between each retries.once the retries are exhausted
+then until successful scope throws MULE:RETRY_EXHAUSTED error.
+2) The error handling can be done by either specifying the type of the error
+of a specifying a condition which handles the error.Usually the error 
+namespace or error identifier is used to specify the condition.
+Specifying the type of the error gets the precedence over "when" condition 
+when both are specified 

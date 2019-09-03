@@ -1,0 +1,26 @@
+<users>
+	<user>
+		<name>ram</name>
+		<city>bengaluru</city>
+		<age>22</age>
+		<profession>engineer</profession>
+		<dob>18/11/1992</dob>
+	</user>
+	<user>
+		<name>ram manohar</name>
+		<city>chennai</city>
+		<age>25</age>
+		<myname>
+			<name>alfred</name>
+		</myname>
+		<profession>manager</profession>
+		<dob>08/05/1986</dob>
+	</user>
+	<user>
+		<name>shyam</name>
+		<city>pune</city>
+		<age>24</age>
+		<profession>sales</profession>
+		<dob>09/05/1988</dob>
+	</user>
+</users>

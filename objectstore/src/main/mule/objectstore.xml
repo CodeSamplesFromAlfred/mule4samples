@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/os	http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="storeflow" doc:id="228ce94e-5cb4-4e06-84a2-00c1c571b279" >
+		<http:listener doc:name="Listener" doc:id="c3bd0da7-5d13-47da-8fe3-347f22b870e2" config-ref="Global_HTTP_Listener" path="/store"/>
+		<os:store doc:name="Store objects in global objectstore" doc:id="bde23ea3-3781-4164-9438-a9b0c65d8b0e" key="#[payload.id]" objectStore="Global_object_store" failIfPresent="true"/>
+		<logger level="INFO" doc:name="logs the payload" doc:id="865c47b4-7494-4b39-8e99-72dcbb0cc596" message="#[payload]"/>
+	</flow>
+	<flow name="retrieveflow" doc:id="d6ee85be-d7be-47de-a190-0399f9cff208" >
+		<http:listener doc:name="Listener" doc:id="3e399076-b646-4507-8497-e9e7129b2157" config-ref="Global_HTTP_Listener" path="/retrieve"/>
+		<os:retrieve doc:name="Retrieve the value from global object store" doc:id="7dc23286-4cd0-4d77-af16-edf90160cf2d" key="#[payload.id]" objectStore="Global_object_store">
+			<os:default-value ><![CDATA[#['nothing']]]></os:default-value>
+		</os:retrieve>
+		<logger level="INFO" doc:name="logs the payload" doc:id="7bfaf1e5-86c5-4029-8a64-f0513d57cfb4" message="#[payload]"/>
+	</flow>
+	<flow name="removeflow" doc:id="5475dd69-41ca-42ac-a756-a3c089eea334" >
+		<http:listener doc:name="Listener" doc:id="e57e60b7-64bd-4d43-9281-82367945a7e0" config-ref="Global_HTTP_Listener" path="/remove"/>
+		<os:remove doc:name="Remove the value corresponding to key from global object store" doc:id="c01f0b05-03e0-4fba-b771-712f8a8bd28e" key="#[payload.id]" objectStore="Global_object_store"/>
+		<logger level="INFO" doc:name="logs the payload" doc:id="ab27fe84-813f-426d-951c-101f8b169833" message="#[payload]"/>
+	</flow>
+	<flow name="getallfromstoreflow" doc:id="b289be71-ca22-4db5-a4c8-b183c2d27117" >
+		<http:listener doc:name="Listener" doc:id="79120db4-db6d-4e3d-8333-969e41e39db9" config-ref="Global_HTTP_Listener" path="/retrieveall">
+		</http:listener>
+		<os:retrieve-all doc:name="Retrieve all" doc:id="8c449bad-f15c-4432-8a90-48d3d9203313" objectStore="Global_object_store"/>
+		<ee:transform doc:name="Transform Message" doc:id="30e3ef07-1fbd-4797-aa53-4c463f3abfbe" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload mapObject (value,key) -> {
+person:read(value,"application/json")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="76f0096a-9432-4fdf-982b-648e49b48162" message="#[payload]"/>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="24993d69-0136-4a86-959c-a6553700c647" />
+	
+</flow>
+	<flow name="getallkeysfromstoreflow" doc:id="9a793d18-aaa0-478c-83e0-e7d95a508fd3" >
+		<http:listener doc:name="Listener" doc:id="620adbbe-97f5-43d0-8882-5879455e3cc2" config-ref="Global_HTTP_Listener" path="/retrieveallkeys"/>
+		<os:retrieve-all-keys doc:name="Retrieve all keys from global object store" doc:id="82b873f9-be9c-4bcd-9e35-7c288c5eb38b" objectStore="Global_object_store"/>
+		<logger level="INFO" doc:name="logs the payload" doc:id="89ec1311-a2b8-41e7-8f47-f870a671bc53" message="#[payload]"/>
+	</flow>
+	<flow name="containsstoreflow" doc:id="e3783329-52bc-49cc-9973-237cc59fcd64" >
+		<http:listener doc:name="Listener" doc:id="3d237b5f-d165-4104-a8b5-630814366b79" config-ref="Global_HTTP_Listener" path="/contains"/>
+		<os:contains doc:name="Global object store contains  key or not" doc:id="565afb97-4963-476f-98d2-cf042da70fa3" key="#[payload.id]" objectStore="Global_object_store"/>
+		<logger level="INFO" doc:name="logs the payload" doc:id="b5101be0-1d2a-481f-a646-4df3f887a150" message="#[payload]"/>
+	</flow>
+	<flow name="clearstoreflow" doc:id="b5d5417c-bbbe-484f-b6ad-5058f74626e9" >
+		<http:listener doc:name="Listener" doc:id="328607a9-d8df-4ff1-87fa-3fb548d329dc" config-ref="Global_HTTP_Listener" path="/clear"/>
+		<os:clear doc:name="Clear everything from global object store" doc:id="6c8f5041-a1b1-4d33-9a73-bd50f2858521" objectStore="Global_object_store"/>		
+		<os:retrieve-all-keys doc:name="Retrieve all keys from global object store" doc:id="9f9e5f72-9983-441d-89d5-5231e32a6a13" objectStore="Global_object_store"/>
+		<logger level="INFO" doc:name="logs the payload" doc:id="8c545760-346e-4a40-b69e-3911de4f0e3b" message="#[payload]"/>
+	</flow>
+</mule>

@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="usageHeader" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: integer]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#dc8efb10-bc87-40c3-b61b-63036fa63b15">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:variables>
+          <types:variable name="soap.APIUsageInformation" type="usageHeader"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

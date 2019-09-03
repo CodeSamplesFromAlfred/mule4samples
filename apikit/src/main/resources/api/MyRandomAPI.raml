@@ -1,0 +1,37 @@
+#%RAML 1.0
+title: Request Type Identifier API
+/checkrequesttype:
+  post:
+    body:
+      application/json:
+        schema: !include schema/jsonRequestSchema.json
+        example: !include requestsamples/jsonRequest.json
+      application/xml:
+        schema: !include schema/xmlRequestSchema.xsd
+        example: !include requestsamples/xmlRequest.xml
+        
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include responsesamples/jsonResponse.json
+          application/xml:
+            example: !include responsesamples/xmlResponse.xml
+/extractperson:
+  get:
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include responsesamples/jsonResponse.json
+          application/xml:
+            example: !include responsesamples/xmlResponse.xml
+  /{personid}:
+    get:
+      responses:
+        201:
+          body:
+            application/json:
+              example: !include responsesamples/jsonResponse.json
+            application/xml:
+              example: !include responsesamples/xmlResponse.xml

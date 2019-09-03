@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="ef4002bf-619e-4081-aa34-5334adbc42b2" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="foreachFlow" doc:id="f9a4a876-625d-4794-8aae-8ceb84c775ff" >
+		<http:listener doc:name="Listener" doc:id="e1fb7430-29f0-4bd8-8e43-4b55f172d35e" config-ref="HTTP_Listener_config" path="/foreach"/>
+		<set-payload value='#[output application/json
+---
+{
+			"employee": {
+				"name": "ram",
+				"city": "bengaluru",
+				"age": 27,
+				"profession": "engineer",
+				"dob": "18/05/1989"
+			},
+			"employee": {
+				"name": "alfred",
+				"city": "pune",
+				"age": 31,
+				"profession": "trench_digger",
+				"dob": "09/10/1985"
+			},
+			"employee": {
+				"name": "sam",
+				"city": "chennai",
+				"age": 35,
+				"profession": "mediaperson",
+				"dob": "16/07/1989"
+			}
+	}]' doc:name="Set Payload" doc:id="a6ab8f75-2b87-4b84-a3f7-b2d69ec79fe9" />
+		<foreach doc:name="For Each" doc:id="dc7edc5b-6d63-40ab-a8e3-e26bfb276360" batchSize="2" collection="payload.*employee">
+			<logger level="INFO" doc:name="Logger" doc:id="f710f968-9643-4cc6-b560-248e2b95a772" message="#[payload[0].value]"/>
+			<file:write doc:name="Write" doc:id="c78e66ed-cfad-4b53-8846-22716b19379a" path="I:\Mule\mule_workspace_2\foreach\src\main\resources\myfile.txt" mode="APPEND"/>
+		</foreach>
+	</flow>
+</mule>

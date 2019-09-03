@@ -1,0 +1,5 @@
+#===================================
+# DB Queries
+#===================================
+db:
+  insert_query: "insert into student (id,first_name,last_name) values (:Id,:first_name,:last_name)" 

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xml-module="http://www.mulesoft.org/schema/mule/xml-module"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/xml-module http://www.mulesoft.org/schema/mule/xml-module/current/mule-xml-module.xsd">
+
+	
+	<flow name="xpathextractflow" doc:id="4fb8ffc0-c37e-4662-b0e0-173c98f2747a" >
+		<http:listener doc:name="Listener" doc:id="0e27ffa1-5841-4ef9-a8e6-f6e263497dba" config-ref="Global_HTTP_Listener" path="/xpathextract"/>
+		<xml-module:xpath-extract doc:name="Xpath extract from payload " doc:id="641378e8-60ac-442d-a085-b65b86cdeb86" xpath="//name[contains(.,$word)]" target="xpathExtracted">
+			<xml-module:context-properties ><![CDATA[#[{'word':attributes.headers.searchword}]]]></xml-module:context-properties>
+		</xml-module:xpath-extract>
+		<set-payload value="#[vars.xpathExtracted]" doc:name="Set variable xpathExtracted as payload" doc:id="3d79993d-9ede-4407-bf2a-f1fce9fc42e5" />
+		<ee:transform doc:name="Convert the arraylist payload to json array" doc:id="b126a5aa-777c-4270-b4a7-f2bf43c402f2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map $]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	
+</flow>
+	<flow name="xpathextractindwflow" doc:id="e453a98a-5cc7-4dfc-a9ad-ba0b814ed3bb" >
+		<http:listener doc:name="Listener" doc:id="687cd397-8ca0-4895-ada6-d103675d6043" config-ref="Global_HTTP_Listener" path="/xpathdw"/>
+		<ee:transform doc:name="Get xpath in dw" doc:id="1790aa02-f4fe-4270-b91c-96616fda78bc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+XmlModule::xpath('//profession[contains(.,\$word)]',payload.^raw, {'word': 'manager'})[0]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logs the payload" doc:id="8479034f-cf09-45a3-9f3e-ed647dc6b622" message="#[payload]"/>
+	</flow>
+	
+	<flow name="xmlvalidationflow" doc:id="f5118add-a492-4df8-8bca-48b6b611b0a3" >
+		<http:listener doc:name="Listener" doc:id="bs3d284d-158b-40e1-a23d-cf80b9b6a2fd" config-ref="Global_HTTP_Listener" path="/xsdvalidation"/>
+		<flow-ref doc:name="xsdvalidationFlow" doc:id="113a2a48-cb15-43f7-84bb-63e0858e1c4f" name="xsdvalidationFlow"/>
+		<logger level="INFO" doc:name="Logs the payload " doc:id="25028e8b-5d9e-4f8f-9f6e-458c84f3255c" message="#[payload]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="On Error Continue" doc:id="8b7a084d-93a4-4162-9731-526e7ee83d62" when="#[error.errorType.namespace == 'MULE']">
+				<set-payload value="#[error.errorMessage.payload]" doc:name="Set errorMessage as payload" doc:id="4924b862-1c0c-4f14-add1-e53179cab9ed" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="xsdvalidationFlow" doc:id="65cc5c8d-d941-44fa-9742-7cfa4e037140" >
+		<xml-module:validate-schema doc:name="Validate the payload against the schema" doc:id="b22aba25-6ca6-41c2-8290-790983681a4b" schemas="schemas/myschema.xsd" />
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="On Error Continue" doc:id="a66a51d1-5cc7-4ac2-94b7-674f433348fb" when="#[error.errorType.namespace == 'XML-MODULE']">
+				<set-payload value="#[error.errorMessage.payload[0].description]" doc:name="Set errorMessage ad payload" doc:id="364027f4-19a1-4fb1-b58d-85871fa5d78a" />
+			</on-error-continue>		
+		</error-handler>
+	</flow>
+	<flow name="xpathinforeachflow" doc:id="fcfaec30-eef5-40f0-b689-f0ed96168a0f" >
+		<http:listener doc:name="Listener" doc:id="827e6607-106f-4075-b035-765bc545c834" config-ref="Global_HTTP_Listener" path="/xpathinforeach" outputMimeType="application/xml"/>
+		<ee:transform doc:name="Initialise 'myvariable' as Array to hold all the payloads in for each loop" doc:id="56474a43-5896-49af-8668-fd40a9c6454d" >
+			<ee:variables >
+				<ee:set-variable variableName="myvariable" ><![CDATA[%dw 2.0
+output application/java
+---
+[] as Array]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="Splits the xml payload according to the xpath given" doc:id="a6ad3b03-9fcd-47bc-86a5-db1f33a0a9f9" collection="#[output application/java --- XmlModule::xpath('//name',payload.^raw, {}) ]">
+			<ee:transform doc:name="Reads the xml string as xml object and assign to variable singlepayload" doc:id="47094ce3-f7ff-4b0a-a206-12faae12e8d3" >
+				<ee:variables >
+					<ee:set-variable variableName="singlepayload" ><![CDATA[%dw 2.0
+output application/xml
+---
+read(payload, "application/xml")]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<logger level="INFO" doc:name="logs the variable singlepayload" doc:id="7f0dd499-452c-483f-b089-67d68827214a" message="#[payload]" />
+			<ee:transform doc:name="Flattens the existing variable 'myvariable' and adds payload into it" doc:id="275c115d-a697-4001-bbaa-0ebd951a1183" >
+				<ee:variables >
+					<ee:set-variable variableName="myvariable" ><![CDATA[%dw 2.0
+output application/java
+---
+flatten(vars.*myvariable ++ [payload])]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<ee:transform doc:name="Converts the variable 'myvariable' to json array payload" doc:id="669d9dd7-cccc-4e23-a9f6-38c0a4bcd58d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.myvariable]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="93294de1-40c6-41bb-9b3e-9b1e7cc14f23" message="#[vars.myvariable]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="92612507-df7a-4acb-8ebb-e79ca73d3bed" >
+				<logger level="INFO" doc:name="Logs the errorMessage as payload" doc:id="554251fa-4f50-4c96-aba9-ea5108e59b1a" message="#[error.errorMessage.payload]"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="xpathinchoiceflow" doc:id="806cd728-18fa-4bb9-8a76-a195e6bf9e8b" >
+		<http:listener doc:name="Listener" doc:id="5a368e8f-e104-4d59-9b61-a9e59cc47551" config-ref="Global_HTTP_Listener" path="/xpathinchoice"/>
+		<choice doc:name="Choice router make use of xpath expression to route the event" doc:id="0f8cb937-b4f0-4015-a196-2be7693d7e4d" >
+			<when expression="#[output application/java --- (XmlModule::xpath('/users/user[1]/name/text()',payload.^raw, {})[0]) == 'ram']">
+<set-payload value="#[output application/java 
+--- 
+read(XmlModule::xpath('/users/user[1]/name/text()',payload.^raw, {})[0],&quot;application/java&quot;)]" doc:name="Set Payload" doc:id="800c6ada-96fc-497e-8d42-d4eae441f318" mimeType="application/java"/>			</when>
+			<otherwise>
+				<set-payload value="#['name']" doc:name="Set Payload" doc:id="94897605-a725-4742-9d65-4bae7df868ce" />
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="507fd73b-eb0b-49d4-b452-cb4dcfd9ccc9" >
+				<set-payload value="#[error.errorMessage.payload]" doc:name="Set errorMessage as payload" doc:id="5607f391-5e12-439b-8678-deca6d25c6a7" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	
+	
+</mule>

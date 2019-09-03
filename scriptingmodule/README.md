@@ -1,0 +1,1 @@
+Mule 4 app to learn more about scripting module

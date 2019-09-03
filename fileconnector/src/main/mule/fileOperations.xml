@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<file:config name="Global_File_Config" doc:name="File Config"
+		doc:id="e3c08856-20d4-4349-9895-a6027550c146">
+		<file:connection workingDir="${mule.home}\apps\${app.name}\">
+		</file:connection>
+	</file:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="ea626f6d-e46c-4316-a2b9-0a3abc18a2f3" file="config/filedetails.yaml"/>
+	<file:config name="Global_config_for_file_listener" doc:name="File Config" doc:id="b8e8eecc-4e14-45cd-860f-8a7d0c91ed7a" >
+		<file:connection workingDir="I:\Mule\file_working_folder" />
+	</file:config>
+	<flow name="usingfileconnectortocopy" doc:id="86f47efb-263f-42e9-9472-9b2268b06680" >
+		<http:listener doc:name="Listener" doc:id="de5813bf-f52d-423a-9740-2ae70df82501" config-ref="Global_HTTP_Listener" path="/filecopy"/>
+		<logger level="INFO" doc:name="Log the working directory path" doc:id="54d55cd7-2d4a-4865-b074-198439de8cb4" message="${file.copy_path}" />
+		<file:copy doc:name="Copy the medium big json file" doc:id="f869bc3c-750a-48aa-9a0c-a423006255d5" sourcePath="#[p ('file.copy_path')]" targetPath="I:\Mule\mule_workspace_2\fileconnectorexplored\src\main\resources\destination" overwrite="true" config-ref="Global_File_Config">
+    		
+		</file:copy>
+		<logger level="INFO" doc:name="Log the payload available at this point" doc:id="73151080-7d08-4f6b-b527-b77cc682ba46" message="#[payload]"/>
+	</flow>
+	<flow name="usingfileconnectortoread" doc:id="p5479ab3-7ea0-4049-8cb5-bd47f5888e6d" >
+		<file:read doc:name="Read" doc:id="3b57bb47-d579-49ce-a641-17cb07ac4bea" config-ref="Global_File_Config" path="#[p('file.read_folder') ++ attributes.fileName]" timeBetweenSizeCheck="2" timeBetweenSizeCheckUnit="SECONDS" target="muleMessageFromFileRead" targetValue="#[message]">
+		</file:read>
+		<set-variable value="#[vars.muleMessageFromFileRead.payload]" doc:name="Set myFileContent" doc:id="497c9455-8c07-400e-862f-1a8b50b157f1" variableName="myFileContent"/>
+		<ee:transform doc:name="Generate file details" doc:id="b16b04ab-4f23-44f9-85c1-da91464bdd07" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/inputDataDetail.dwl" variableName="dwOutput" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log the payload" doc:id="8d94a3c8-b413-4bf6-9071-6143b639a1d5" message="#[payload]" />
+	</flow>
+	<flow name="usingfileconnectortowrite" doc:id="cc1cc006-278c-4f24-b0a2-4ba07345e9a7" >
+		<http:listener doc:name="Listener" doc:id="af92ce7b-6947-40ad-aa96-d1e2eaf7e1ce" config-ref="Global_HTTP_Listener" path="/filewrite"/>
+		<file:write doc:name="Write the http request to destination" doc:id="c01b14d5-2512-4e07-85d2-fdc3a137b39a" config-ref="Global_File_Config" path="I:\Mule\mule_workspace_2\fileconnectorexplored\src\main\resources\destination\${app.name}.txt">
+			<file:content ><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+	'name':payload.details.name,
+	'age':payload.details.age,
+	'org':payload.details.org ++ ' | ' ++ payload.details.city
+}]]]></file:content>
+		</file:write>
+		<logger level="INFO" doc:name="Logs the payload at this point" doc:id="e78e7aa5-a19f-473f-b016-deddac10c8d2" message="#[payload]"/>
+	</flow>
+	<flow name="usingfileconnectortodelete" doc:id="fb8d47e7-2f7d-4f68-84e6-891c0d3f237e" >
+		<http:listener doc:name="Listener" doc:id="32fd3ff5-0455-4fdb-9cf5-f6e9694135a9" config-ref="Global_HTTP_Listener" path="/deletefile"/>
+		<file:delete doc:name="Delete" doc:id="d2ba2104-c95f-4ac4-a1ff-5a7d897207c4" config-ref="Global_File_Config" path="I:\Mule\mule_workspace_2\fileconnectorexplored\src\main\resources\requestsamples\medium_big.json">
+		</file:delete>
+		<logger level="INFO" doc:name="Logs the payload at this point" doc:id="52a2b138-0753-4ec0-b5b7-abc5f792708e" message="#[payload]"/>
+	</flow>
+	<flow name="usingfileconnectortolist" doc:id="5c4fd2a0-54a5-4291-8b84-d37b7660774d" >
+		<http:listener doc:name="Listener" doc:id="01bf0bdf-121b-4c27-95aa-1796cc1c884c" config-ref="Global_HTTP_Listener" path="/listfiles"/>
+		<file:list doc:name="List the files" doc:id="38bd301c-13df-404f-a0dc-95cbe9eb9264" directoryPath="I:\Git\repos\mule4learning\fileconnector\src\main\resources\requestsamples" recursive="true" timeBetweenSizeCheck="3" timeBetweenSizeCheckUnit="SECONDS" config-ref="Global_File_Config">
+		</file:list>
+		<foreach doc:name="For Each" doc:id="cf6aa1cb-5313-4239-b85a-a6b8600d862f" collection="#[payload]" rootMessageVariableName="myRoot" batchSize="2">
+			<flow-ref doc:name="usingfileconnectortoread" doc:id="9f038609-cf68-4d23-9ace-1c6957fd8242" name="usingfileconnectortoread"/>
+		</foreach>
+		<logger level="INFO" doc:name="Logs the payload at this point" doc:id="0df5742c-758e-4f0e-b415-4f974dd4af2f" message="#[payload[0]]"/>
+	</flow>
+	<flow name="scheduledfilelisting" doc:id="411dbd1c-5307-4b83-b10a-cf05bd0a3023" initialState="stopped">
+         <file:listener doc:name="On New or Updated File" doc:id="ca3dfaac-5cb2-4fce-99d4-d5c1fc35bfd5" directory="I:\Mule\file_working_folder\input" moveToDirectory="I:\Mule\file_working_folder\output" renameTo="#[file.attributeName ++ '.backup.csv']" watermarkMode="CREATED_TIMESTAMP" timeBetweenSizeCheck="5" timeBetweenSizeCheckUnit="SECONDS">
+			<scheduling-strategy >
+				<fixed-frequency frequency="15" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</file:listener>
+         <ee:transform doc:name="Transform Message" doc:id="f2654ac6-c317-4780-be6f-7fa987f50abd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+paylaod]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="20faeccd-d4f4-4dfe-b7f1-38bc39e1dddf" collection="#[payload]">
+             <logger level="INFO" doc:name="Logger" doc:id="be83aea6-9bc1-4d6c-bcc3-1abacbd78592" message="#[payload]"/>
+         </foreach>
+     </flow>
+     <flow name="filefolderlistener" doc:id="449a2968-af3e-451c-9ea8-a58f8ec487f4" initialState="stopped">
+         <scheduler doc:name="Every 5 second scheduler" doc:id="21625e57-0948-44ab-90c5-be7f5b5d9753" >
+             <scheduling-strategy >
+                 <fixed-frequency frequency="5" startDelay="1" timeUnit="SECONDS"/>
+             </scheduling-strategy>
+         </scheduler>
+         <file:list doc:name="List the files in directory" doc:id="78f417df-16e8-4ad2-a827-c3c849356103" directoryPath="${file.copy_path}"/>
+         <foreach doc:name="For Each" doc:id="cf84d199-603e-4c7f-8d6a-f302ea8249bb" collection="#[payload]">
+             <logger level="INFO" doc:name="Logger" doc:id="cbb2ed45-82ea-4e52-89be-eec750cd6fba" message="#[attributes.fileName]"/>
+         </foreach>
+     </flow>
+</mule>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="sendattachment" doc:id="59ddb405-6361-4f90-8b42-52e19cef9032">
+		<http:listener doc:id="f44e1e0b-0119-4fb0-a379-3049fd648d54" config-ref="Global_HTTP_Listener" path="/sendattachment" />
+		<ee:transform doc:name="Get the attachment content from attachment"
+			doc:id="a40d19aa-2fc6-49a4-aca6-98dfb8fc8a9c">
+			<ee:variables>
+				<ee:set-variable resource="dw_config/getXMLAttachmentContent.dwl" variableName="xmlContent" />
+				<ee:set-variable resource="dw_config/getJSONAttachmentContent.dwl" variableName="jsonContent" />			
+			</ee:variables>
+		</ee:transform>
+		
+		<ee:transform doc:name="Transform the retrieved data" doc:id="9a95795-d44d-6c77-9490-6bdd16442309" >
+		
+			<ee:variables >
+				<ee:set-variable resource="dw_config/XMLtransfrom.dwl" variableName="transformedJSON" />
+				<ee:set-variable resource="dw_config/jsonTransform.dwl" variableName="transformedXML" />
+			
+</ee:variables>
+		</ee:transform>
+		<http:request method="POST" doc:name="Http request to httpbin post service" doc:id="122ccccd-b0dd-47bf-8979-bbf9fe7a90d9" config-ref="Global_Httpbin_Request" path="/post">
+			<http:body ><![CDATA[#[%dw 2.0
+output multipart/form-data
+---
+{
+	parts:{
+	"myxmlfile":{
+		headers : {            
+           "Content-Disposition" : {
+            "name": "myxmlfile",
+            "filename": "myxmlfile.xml"
+        },
+            "Content-Type" : "application/xml"
+        },
+        content:vars.transformedXML 
+	},
+	"myjsonfile":{
+		headers : {            
+           "Content-Disposition" : {
+            "name": "myjsonfile",
+            "filename": "myjsonfile.json"
+        },
+            "Content-Type" : "application/json"
+        },
+        content:vars.transformedJSON
+	}
+}
+
+}]]]></http:body>
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	name : vars.nameFromJson
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	city : vars.cityFromXML
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="01b2e1d3-d3a3-4e81-9fd2-c4029224441c" message="#[payload]"/>
+	</flow>
+	
+</mule>

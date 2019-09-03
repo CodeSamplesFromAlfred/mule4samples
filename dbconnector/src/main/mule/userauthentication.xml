@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="registeruser" doc:id="abfa98f6-c371-4bd0-9139-b15d98d25e95" >
+		<http:listener doc:name="Listener" doc:id="4d08d06f-504c-4f6e-b132-d0bd53923d80" config-ref="HTTP_listener_config1" path="/userreg"/>
+		<ee:transform doc:name="Transform Message" doc:id="d164c6ec-5ce9-4764-bd54-e2afcbf50caa" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/hashUserDetail.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="34f847dd-2447-43cd-be08-e81af8a8890e" message="#[payload]"/>
+		<db:insert doc:name="Insert" doc:id="dd8966f1-9c12-454c-970d-ee4ab75d30fb" config-ref="Database_Config">
+			<db:sql >insert into userlogin (username,password) values (:username,:password)</db:sql>
+			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+		</db:insert>
+	</flow>
+	<flow name="userauthenticationFlow" doc:id="0370b103-d545-4a05-84d1-ecb808ba5298" >
+		<http:listener doc:name="Listener" doc:id="72ac5776-ea8e-468d-b650-a25d46b91026" config-ref="HTTP_listener_config1" path="/userverify"/>
+		<ee:transform doc:name="Transform Message" doc:id="45a63ff5-095c-40c3-b95e-78cbe124e082" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/hashUserDetail.dwl" />
+			</ee:message>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="bc9482d5-f73a-4b80-8642-4c95f2964549" config-ref="Database_Config">
+			<db:sql >select * from userlogin where username = :username and password = :password</db:sql>
+			<db:input-parameters ><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+	'username':payload.username,
+	'password':payload.password
+}]]]></db:input-parameters>
+		</db:select>
+		<logger level="INFO" doc:name="Logger" doc:id="dfe3cc02-46cb-4232-8705-8f96b8e7e991" message="#[payload]"/>
+	</flow>
+</mule>

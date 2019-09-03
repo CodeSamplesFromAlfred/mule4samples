@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="advancedgroovyflow" doc:id="14fb0bfc-6b01-46e8-9baa-40d9a1cc7d99" >
+		<http:listener doc:name="Listener" doc:id="2c7e0928-d86a-4743-ab50-ef3d5da5da74" config-ref="Global_HTTP_Listener" path="/advancedgroovy"/>
+		<set-payload value="#[app.name]" doc:name="Set app name as payload" doc:id="aff965ea-cd77-43db-9cb9-c236a35eb1d5" />
+		<scripting:execute doc:name="calling a flow in groovy" doc:id="f96c30e1-a230-4825-8d6b-a9934af17a8d" engine="groovy">
+			<scripting:code> import org.mule.runtime.api.message.Message;
+import org.mule.runtime.core.api.event.CoreEvent;
+import org.mule.runtime.core.api.event.EventContextFactory
+myAttributes=message.getAttributes().getValue()
+flow=registry.lookupByName(&quot;groovycallingflow&quot;).get()
+thisflow=registry.lookupByName(&quot;advancedgroovyflow&quot;).get()
+//println(thisflow)
+builder=Message.builder()
+builder.attributesValue(myAttributes)
+builder.value(payload)
+msg = builder.build()
+event =CoreEvent.builder(EventContextFactory.create(thisflow,
+org.mule.runtime.dsl.api.component.config.DefaultComponentLocation.fromSingleComponent(&quot;advancedgroovyflow&quot;))).message(msg).build();
+result =flow.process(event);
+println(result)
+return result.getMessage()</scripting:code>
+		</scripting:execute>
+		<logger level="INFO" doc:name="logs the payload" doc:id="51ad123d-fa6e-443e-9e78-7df8f1e3094f" message="#[payload]" />
+	</flow>
+	<flow name="basicgroovyflow" doc:id="49fef15d-2c5c-4153-a5c8-030ab49e4f92" >
+		<http:listener doc:name="Listener" doc:id="38f0d519-8bb6-4f87-a569-d6a1aaa47391" config-ref="Global_HTTP_Listener" path="/basicgroovy"/>
+		<set-variable value="#[mule.version]" doc:name="Set variable muleVersion" doc:id="c4cfd31f-079c-4eda-be99-b1675c70f4a2" variableName="muleVersion"/>
+		<ee:transform doc:name="Convert the payload to string type" doc:id="1f9bc72d-a2e5-44bc-b734-9f0748338006" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<scripting:execute doc:id="d01bd59d-a7c6-45bf-af09-bee315f20997" doc:name="basic operations in groovy" engine="groovy">
+			<scripting:code >//sleep(1000)
+myAttributes=message.getAttributes().getValue()
+println(message.getAttributes().getDataType())
+someVar=vars.muleVersion
+//println(someVar)
+myPayload=message.getPayload().getValue() + '  johnson'
+//println(myPayload)
+//creates a  new builder object from the modified payload
+//the sets the attributes in the builder object
+myBuilder=message.builder(message.of(myPayload))
+myBuilder.attributesValue(myAttributes)
+return myBuilder.build()
+</scripting:code>
+		</scripting:execute>
+		<logger level="INFO" doc:name="logs the payload" doc:id="3efc75da-e048-4180-bb02-c7b29a3ef58b" message="#[payload]" />
+	</flow>
+	<flow name="groovycallingflow" doc:id="54346d99-e419-42ba-859b-05dccb631c04" >
+		<ee:transform doc:name="append some to incoming payload" doc:id="d0890a65-ae78-43d7-9de7-b6f1b61678db" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++' '++"coming from groovycallingflow"
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

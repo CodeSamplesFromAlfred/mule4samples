@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="scattergatherFlow" doc:id="2adff7c0-43e5-4d64-84a9-36c98ff01415" >
+		<http:listener doc:name="Listener" doc:id="8488afa0-d651-47ec-83af-c4385fc449bd" config-ref="Global_HTTP_Listener" path="/scattergather">
+			<non-repeatable-stream />
+		</http:listener>
+		<ee:transform doc:name="Convert the payload in to java" doc:id="95ce1811-63b3-4147-be1c-58247b938404" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="4207bb00-a1d5-4e57-805b-afaa59d81296" timeout="3000">
+			<route >
+				<set-variable value="#['variablevalue1']" doc:name="Set variable myvariable1" doc:id="4bb246cc-dcec-4e28-98f8-1d599275b63b" variableName="myvariable1"/>
+				<try doc:name="Try" doc:id="35dbea4f-a890-4e08-97d7-af794a1bd80e" >
+					<set-payload value="#['alfred']" doc:name="Set Payload" doc:id="acbf9d07-9f49-4413-bb4e-9e949919e418" />
+				</try>
+			</route>
+			<route >
+				<set-variable value="#['variablevalue2']" doc:name="Set variable myvariable1" doc:id="b88fd908-9719-4d54-9e79-b2bfc36bfed2" variableName="myvariable1"/>
+				<set-payload value="#['ram']" doc:name="Set Payload" doc:id="8057e681-920c-4107-8a77-28ea93dd6401" />
+			</route>
+			<route >
+				<try doc:name="Try" doc:id="b158b8cb-7c63-4900-a7c0-6624ceb9f1cc" >
+					<set-variable value="#['variablevalue2']" doc:name="Set variable myvariable1" doc:id="cfc19376-a602-4cd2-a459-03568e97ce22" variableName="myvariable1" />
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7b465eec-f5ba-4802-bdef-d360cef2cf3e" >
+							<set-payload value="#['error payload']" doc:name="Set a error payload" doc:id="bdba0849-df46-4f65-9f04-a6a58e028c59" />
+						</on-error-continue>
+					</error-handler>
+				</try>
+				<set-payload value="#['rose']" doc:name="Set Payload" doc:id="2f9a6e84-2e25-471d-bfd3-621edf7f3feb" />
+			</route>
+			
+		</scatter-gather>
+		<ee:transform doc:name="Transform scatter gather result object in to json" doc:id="1e7b42c3-5e79-4489-b192-3c2ca0c7c2c6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payloads:payload mapObject {
+	'route$$':$.payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="96e1f7aa-cfa1-41cf-9385-7050070b7b1e" message="#[payload[0]]"/>
+	</flow>
+</mule>

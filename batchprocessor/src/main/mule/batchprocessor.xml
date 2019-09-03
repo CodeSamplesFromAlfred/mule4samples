@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="e0d2925b-34dd-42de-ac30-4cf7cb25e0cf" file="salesforceconfig/cred.properties" />
+	<global-property doc:name="Global Property" doc:id="219416c4-484d-40f0-a4eb-d48c28c3d424" name="myGlobalProperty" value="NeverFail" />
+	<flow name="batchprocessorFlow" doc:id="3efb0714-47f7-414c-b636-5cb76384e35e" >
+		<file:listener doc:name="On New or Updated File" doc:id="b63e01b0-b5a8-4dbd-9c1e-c4d811029c14" directory="I:\Mule\folder_for_file" watermarkMode="MODIFIED_TIMESTAMP">
+			<scheduling-strategy >
+				<fixed-frequency frequency="5" timeUnit="MINUTES" />
+			</scheduling-strategy>
+		</file:listener>
+		<ee:transform doc:name="Convert the csv payload to java]" doc:id="b0a586f2-d1dd-4e93-8f22-949ef7235c5e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[sizeOf(payload)]" doc:name="Set sizeOfPayload variable" doc:id="dcbec47e-85dc-42b2-9e03-adb6cb95794e" variableName="sizeOfPayload"/>
+		<batch:job jobName="batchprocessorBatch_Job" doc:id="f3197bb5-8252-424b-a85e-ad4d6ff83fd0" >
+			<batch:process-records >
+				<batch:step name="Batch_step1" doc:id="54b74733-2084-428b-9406-5bac3f7d0118" acceptExpression="#[payload.value &gt; 100]">
+					<set-variable value="#[payload.value]" doc:name="Set payloadValue variable" doc:id="cff6274b-5129-4fb9-8886-a55169851e48" variableName="payloadValue"/>
+					<set-payload value='#[payload ++ {"myname":"alfred"}]' doc:name="Set Payload" doc:id="be50a98d-94fb-4acc-a835-0bc5f1820224" />
+					<logger level="INFO" doc:name="Logger" doc:id="640c7e13-b3fa-4245-aa1b-7b0224c65c76" message="#[payload]"/>
+				</batch:step>
+				<batch:step name="Batch_Step2" doc:id="857b26c6-500f-4e94-b814-4f29d54b3ed8">
+					<logger level="INFO" doc:name="Logger" doc:id="0a7aa586-0f8b-4392-9acd-0c728d361864" message="#[payload]"/>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logs the payload at on complete phase" doc:id="809378ae-8307-48eb-9f1e-11662abab5cf" message="#[payload]"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<flow name="batchprocessorFlow1" doc:id="4cf3d399-6ac2-456b-b1c5-5b4ce8babeaa" >
+		<ee:transform doc:name="Transform Message" doc:id="d20eacc9-7e3e-406a-bd93-cbed503d8b27" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="02e6e0f5-93cd-49ff-ba5d-feb8bbec9c8a" message="#[payload]"/>
+	</flow>
+</mule>

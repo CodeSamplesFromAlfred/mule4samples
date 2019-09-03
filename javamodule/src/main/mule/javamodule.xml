@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="7c8f4131-fce3-4702-ace7-d54281104436" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="createjavaobjectflow" doc:id="0c584bec-13be-4802-877a-00eae706b69b" >
+		<http:listener doc:name="Listener" doc:id="c67966ae-cbca-4a83-b90c-cd0c1285f1bb" config-ref="HTTP_Listener_config" path="/createobject"/>
+		<java:new doc:name="New" doc:id="087ff4c9-4714-4195-9611-533ad93d6f88" class="com.alfred.Person" constructor="Person(String)">
+			<java:args ><![CDATA[#[arg0:'alfred']]]></java:args>
+		</java:new>
+		<logger level="INFO" doc:name="Logger" doc:id="4b143095-ded0-4961-b9a8-6700812ffb20" message="#[payload]"/>
+	</flow>
+	<flow name="callstaticmethodflow" doc:id="5dfce1a4-fa05-47c5-a324-625b00506018" >
+		<http:listener doc:name="Listener" doc:id="f1397102-0b14-4e1e-ba67-22bc4fccf0fb" config-ref="HTTP_Listener_config" path="/callstatic"/>
+		<java:invoke-static doc:name="Invoke static" doc:id="0ae200f0-5434-4791-a1c8-fd5499d1e06a" class="com.alfred.Person" method="getSavings(int)" target="money">
+			<java:args><![CDATA[#[arg0:payload.age]]]></java:args>
+		</java:invoke-static>
+		<ee:transform doc:name="Execute static method in datweave" doc:id="b555b48b-a786-403f-9809-6c7e3810a1a4" >
+			<ee:variables >
+				<ee:set-variable variableName="staticResult" ><![CDATA[%dw 2.0
+import java!com::alfred::Person
+output application/java
+---
+Person::getSavings(payload.age)
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the variable money" doc:id="cbb7715a-d2d3-448c-ad39-4a70834e5bbb" message="#[vars.money]"/>
+		<logger level="INFO" doc:name="Logs the variable staticResult" doc:id="023a28ae-d788-4998-908c-ffef5d7f9092" message="#[vars.staticResult]"/>
+	</flow>
+	<flow name="callinstancemethodflow" doc:id="15bc6ad4-f044-4e1c-900e-ca4a5f055580" >
+		<http:listener doc:name="Listener" doc:id="943067f2-2b48-4694-b43d-3b1dce2ab05c" config-ref="HTTP_Listener_config" path="/callinstance"/>
+		<java:new doc:name="create a Person object" doc:id="3b978cbd-138c-43bf-92eb-0165adc96fa1" class="com.alfred.Person" constructor="Person()" target="Person"/>
+		<ee:transform doc:name="Refer the public instance field in dataweave" doc:id="1bdd1d0a-ab94-4a12-a29f-b45f71df1b1f">
+			<ee:variables>
+				<ee:set-variable variableName="javaPublicField"><![CDATA[%dw 2.0
+import java!com::alfred::Person
+output application/java
+---
+Person::new(payload.firstName).firstName
+]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the variable javaPublicField" doc:id="354dfef6-97b2-43cc-be60-3fe315973e28" message="#[vars.javaPublicField]" />
+		<java:invoke doc:name="Invoke getName method on Person object" doc:id="95757bf1-165d-4df3-9d85-32e8b0ea5cc8" instance="#[vars.Person]" class="com.alfred.Person" method="getName(String,String)" target="invokeResult">
+			<java:args ><![CDATA[#[{arg0:payload.firstName,arg1:payload.lastName}]]]></java:args>
+		</java:invoke>
+		<java:validate-type doc:name="Validate if a Person object is of type HumanBeing" doc:id="0856057f-dd89-4b73-9b0b-d64f3039121e" class="com.alfred.HumanBeing" instance="#[vars.Person]"/>
+		<logger level="INFO" doc:name="Logger the variable invokeResult" doc:id="c33278a4-45fe-4edd-9866-0f7c00763046" message="#[payload]"/>
+	</flow>
+</mule>

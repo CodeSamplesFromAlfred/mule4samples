@@ -1,0 +1,6 @@
+//user
+//text()[. = 'ram']
+//text()[contains(.,'ram')]
+//name[contains(.,'ram')]
+//name[contains(.,$word)]
+/users/user[1]/name/text()

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+	<flow name="jsonschemavalidationflow" doc:id="d5c33c27-215b-41fa-bfa6-458056161c3c" >
+		<http:listener doc:name="Listener" doc:id="40d01089-3c33-4f2d-941e-052c58d3799b" config-ref="Global_HTTP_Listener" path="/jsonschema"/>
+		<json:validate-schema doc:name="Validate payload against json schema" doc:id="4580c24d-7c63-4a2f-acc7-45aedc036158" schema="schema/myschema.json"/>
+		<logger level="INFO" doc:name="Logs the payload" doc:id="d65f17cc-5ac3-4fd4-bc19-3dac7107c2ec" message="#[payload]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="ea79f632-a9d5-4b88-847b-9aa0ab4a31ca" type="JSON:SCHEMA_NOT_HONOURED">
+				<set-payload value="#[error.errorMessage.payload]" doc:name="Set errorMessage as payload" doc:id="df9a7725-ed05-4b1e-acbd-05005c463c5f" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="asyncscope" doc:id="ec2be44f-675c-4653-9170-32ffd977a657" >
+		<http:listener doc:name="Listener" doc:id="87df2c7e-df4c-4499-8227-fae72eed86f0" config-ref="Global_HTTP_Listener" path="/asyncscope"/>
+		<set-variable value="#[mule.version]" doc:name="Set muleVersion" doc:id="ec0f3c37-596c-404c-9966-1d5922c88ba7" variableName="muleVersion"/>
+		<async doc:name="Async" doc:id="9d9f3fa5-cd4d-41ae-b6ec-42e8844a0e60" >
+			<flow-ref doc:name="subflowA" doc:id="c797f4bf-9237-4046-b184-98cd31de6feb" name="subflowA" target="subflowAPayload" targetValue="#[payload]"/>
+		</async>
+		<set-variable value="#[server.osName]" doc:name="Set osName" doc:id="01c01695-cd32-4q1f-89c8-db2c8c46fbf2" variableName="osName"/>
+		<http:request method="POST" doc:name="Request" doc:id="b9e915ff-2d89-4257-8b5e-998ae9c84406" config-ref="Global_Httpbin_Request" path="/post"/>
+		<logger level="INFO" doc:name="Try to log appName variable" doc:id="0e445523-d43d-43bf-a79d-55f3aef42cd7" message="#[if (vars.appName != null) vars.appName else 'asyncscope' ++ &quot; can\'t be accessed&quot;]"/>
+	</flow>
+	<sub-flow name="subflowA" doc:id="4ff0bafb-8b46-4e0d-831a-69c432b5c3fa">
+		<ee:transform doc:name="Transform Message" doc:id="1be9f601-fdc3-4707-a16f-7351229ad281" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/jsonToCSV.dwl" />
+			</ee:message>
+		</ee:transform>
+		<async doc:name="Async" doc:id="269d5ccc-9829-4b40-b3cd-d1a5c9a4013e" >
+			<flow-ref doc:name="subflowB" doc:id="0ee5d5d9-cd0d-440c-9ab3-1e0b40a93adf" name="subflowB"/>
+		</async>
+		<set-variable value="#[app.name]" doc:name="Set appName" doc:id="141bbc28-7690-47bb-a0d8-03661bf03a89" variableName="appName"/>
+		<logger level="INFO" doc:name="Try to log myPayload variable" doc:id="b82c393e-e724-4a20-bc0f-5cae3c008a2f" message="#[if (vars.myPayload != null) vars.myPayload else 'myPayload variable from subflowB' ++ &quot; can\'t be accessed&quot;]"/>
+
+	
+	</sub-flow>
+	<sub-flow name="subflowB" doc:id="21be8759-1788-492a-9959-ed6ce50dba2c" >
+		<ee:transform doc:name="Transform Message" doc:id="1c3500e8-ee53-47fa-b936-e6a45df484b0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml indent=true,encoding="UTF-16"
+---
+root:{(payload filter ($.id == "1200") map {
+	person:{
+		name:$.name,
+		id:$.id
+		}
+}	
+)	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Set payload as myPayload variable" doc:id="12e7455f-8b3b-4200-939b-c982a031635b" variableName="myPayload"/>
+	</sub-flow>
+</mule>

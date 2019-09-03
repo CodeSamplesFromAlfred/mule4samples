@@ -1,0 +1,21 @@
+[{
+	"name":"renju",
+	"city":"bengaluru",
+	"age":27,
+	"profession":"engineer",
+	"dob":"18/05/1985"
+},
+{
+	"name":"alfred",
+	"city":"bengaluru",
+	"age":33,
+	"profession":"dreamer",
+	"dob":"18/10/1985"
+},
+{
+	"name":"sam",
+	"city":"bengaluru",
+	"age":35,
+	"profession":"mediaperson",
+	"dob":"18/05/1985"
+}]
