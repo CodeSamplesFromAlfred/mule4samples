@@ -1,0 +1,60 @@
+[
+	{
+		"student": {
+			"name":"Akshay",
+			"address": {
+				"street": {
+					"name": "Dharavi",
+					"number": 2302
+				},
+				"area": {
+					"city": "Mumbai"
+				}
+			}
+		}
+	},
+	{
+		"student": {
+			"name":"Ram",
+			"address": {
+				"street": {
+					"name": "Perumgudi",
+					"number": 2302
+				},
+				"area": {
+					"city": "Chennai"
+				}
+			}
+		}
+	},
+	{
+		"student": {
+			"name":"Jose",
+			"address": {
+				"street": {
+					"name": "Indiranagar",
+					"number": 2302
+				},
+				"area": {
+					"city": "Blore"
+				}
+			}
+		}
+	},
+	{
+		"student": {
+			"name":"Boris",
+			"address": {
+				"street": {
+					"name": "Paradi",
+					"number": 2301
+				},
+				"area": {
+					"city": "Pune"
+				}
+			}
+		}
+	}
+
+]
+

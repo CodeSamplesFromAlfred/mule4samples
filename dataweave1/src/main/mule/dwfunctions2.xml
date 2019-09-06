@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="groupbyflow1" doc:id="df11b0ad-9910-493q-9c10-91ccda994f64" >
+		<http:listener doc:name="Listener" doc:id="bdfb5d65-68b1-4084-1858-e339fd6f741d" config-ref="HTTP_Listener_config" path="/groupby1"/>
+		<ee:transform doc:name="Transformation using groupby1.dwl and groupby2.dwl files" doc:id="b66b6808-0edd-4a2b-a0de-25e0377f4810" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/groupby1.dwl" variableName="var1" />
+				<ee:set-variable resource="dw_config/groupby2.dwl" variableName="var2" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="0a16ad4d-ce4c-4202-b9d3-83d36b93399f" message="payload"/>
+	</flow>
+	<flow name="groupbyflow2" doc:id="85b443b9-6adf-4185-b4d9-9ee48ae85eee" >
+		<http:listener doc:name="Listener" doc:id="5f04398d-e084-4af7-8aeb-a5c9e4b63294" config-ref="HTTP_Listener_config" path="/groupby2"/>
+		<ee:transform doc:name="Transformation using groupby3.dwl file" doc:id="bbb4b1cd-645f-41e5-8eee-74aa936a968e" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/groupby3.dwl" variableName="var1" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="242cc70d-bf8a-44bf-b988-b35a3880fd88" message="payload"/>
+	</flow>
+	<flow name="groupbyflow3" doc:id="c280f419-8758-4b6b-a5b7-c389d3c47955" >
+		<http:listener doc:name="Listener" doc:id="8446b46a-e2f6-4329-ae6e-5ed42ebc259f" config-ref="HTTP_Listener_config" path="/groupby3"/>
+		<ee:transform doc:name="Transformation using groupby4.dwl file" doc:id="452ecbd7-63fd-4a8b-8e40-11838096a0bb" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/groupby4.dwl" variableName="var2" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="76b3a1d0-2fe4-467d-96be-5d70dfcfffe6" message="payload"/>
+	</flow>
+	<flow name="mapflow1" doc:id="bf967318-8be7-413e-acd4-18d82d93b4c1" >
+		<http:listener doc:name="Listener" doc:id="bc8a119a-1822-4080-8c4c-5f6e89af055a" config-ref="HTTP_Listener_config" path="/map1"/>
+		<ee:transform doc:name="Transformation using map1.dwl" doc:id="862691cc-3fe1-4447-a487-9fe2a661987c" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/map1.dwl" variableName="var1" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="00390761-9f08-4e01-a101-a34b86236904" message="payload"/>
+	</flow>
+	<flow name="mapflow2" doc:id="5088841f-fbc2-4dea-b36a-a6a505fcafc9" >
+		<http:listener doc:name="Listener" doc:id="7daa9a70-c1e5-44ef-b03c-59d3d02c5a37" config-ref="HTTP_Listener_config" path="/map2"/>
+		<ee:transform doc:name="Transformation using map2.dwl" doc:id="bc441344-3d1b-4801-95a7-7cc0601981cf" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/map2.dwl" variableName="var2" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="114eeaff-4684-47c4-aec1-01febc85de8b" message="payload"/>
+	</flow>
+	<flow name="mapflow3" doc:id="689f4e17-4c5a-3486-8dd1-9da8f755244f" >
+		<http:listener doc:name="Listener" doc:id="eb6e0978-9d3a-4e10-8883-dd7c1dd4be65" config-ref="HTTP_Listener_config" path="/map3"/>
+		<ee:transform doc:name="Transformation using map3.dwl" doc:id="9e98204c-a6a1-4b9c-9f19-b809384ffa68" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/map3.dwl" variableName="map1" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="7b6b500f-04d9-49b4-97a3-2b1c45c33b1e" message="payload"/>
+	</flow>
+</mule>

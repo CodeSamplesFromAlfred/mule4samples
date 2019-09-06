@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+		<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9398cf53-0c9b-40ac-b522-c1e5c2bae15d" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="filterflow1">
+		<http:listener doc:name="Listener" doc:id="3e1d9807-e510-4d45-a2ed-0e4f39e170e8" path="/filter1" config-ref="HTTP_Listener_config"/>		
+		<ee:transform doc:name="Transformation using filter dwl files" doc:id="b66b6808-0edd-4a2b-a0de-25e0377f4810" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/filter1.dwl" />
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dw_config/filter2.dwl" variableName="var1" />
+				<ee:set-variable resource="dw_config/filter3.dwl" variableName="var2" />
+				<ee:set-variable resource="dw_config/filter4.dwl" variableName="var3" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="0a16ad4d-ce4c-4202-b9d3-83d36b93399f" message="payload"/>
+	</flow>
+	
+	<flow name="filterflow2" doc:id="84b440a9-6adf-4185-b4d9-9ee48ae85eee" >
+		<http:listener doc:name="Listener" doc:id="5f04398d-e084-4af7-8aeb-a5c9e4b63294" path="/filter2" config-ref="HTTP_Listener_config"/>
+		<ee:transform doc:name="Transformation using filter dwl files" doc:id="bbb4b1cd-645f-41e5-8eee-74aa936a968e" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/filter5.dwl" />
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dw_config/filter6.dwl" variableName="var1" />
+				<ee:set-variable resource="dw_config/filter7.dwl" variableName="var2" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="242cc70d-bf8a-44bf-b988-b35a3880fd88" message="payload"/>
+	</flow>
+	<flow name="filterflow3" doc:id="9867f867-9378-4ed6-bb53-11c98f703421" >
+		<http:listener doc:name="Listener" doc:id="42a38748-5820-47cc-be69-07c16134eb11" config-ref="HTTP_Listener_config" path="/filter3"/>
+		<ee:transform doc:name="Transformation using filter dwl files" doc:id="c7d2d8eb-89da-4cab-88e1-37601b5171f2" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/filter8.dwl" />
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dw_config/filter9.dwl" variableName="var1" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="ebf0fc69-f277-41c5-9a77-7b6d1e8c0863" message="payload"/>
+	</flow>
+	<flow name="orderbyflow1" doc:id="af967317-7bf0-413e-acd4-18d82d93b4c1" >
+		<http:listener doc:name="Listener" doc:id="bc8a119a-1822-4080-8c4c-5f6e89af055a" config-ref="HTTP_Listener_config" path="/orderby1"/>
+		<ee:transform doc:name="Transformation using orderby dwl files" doc:id="862691cc-3fe1-4447-a497-9fe2a661987c" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/orderby1.dwl" variableName="orderbyvar1" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="00390761-9f08-4e01-a101-a34b86236904" message="payload"/>
+	</flow>
+	<flow name="orderbyflow2" doc:id="9e584654-188d-4b54-84c6-28ed0d350e0f" >
+		<http:listener doc:name="Listener" doc:id="cec2c234-4791-460f-8748-cfa0bb75ac7e" config-ref="HTTP_Listener_config" path="/orderby2"/>
+		<ee:transform doc:name="Transformation using orderby dwl files" doc:id="cfef0e57-c6ae-4e83-b243-a7918a76fef3" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/orderby2.dwl" variableName="orderbyvar2" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="eead71e2-846c-4939-b8c9-d0f16a497041" message="payload"/>
+	</flow>
+	<flow name="orderbyflow3" doc:id="5088859f-fbc2-4dca-b36a-a6a505fcafc9" >
+		<http:listener doc:name="Listener" doc:id="7daa9a71-21e5-44ef-b06c-59d3d02c5a37" config-ref="HTTP_Listener_config" path="/orderby3"/>
+		<ee:transform doc:name="Transformation using orderby dwl files" doc:id="bc441344-3d1b-4001-95a7-7cc0601981cf" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/orderby3.dwl" variableName="orderbyvar1" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="114eeaff-4684-47c4-aec1-01febc85de8b" message="payload"/>
+	</flow>
+	<flow name="orderbyflow4" doc:id="de21120a-5555-4a43-acc4-9fab97a73dfc" >
+		<http:listener doc:name="Listener" doc:id="36799746-6435-4e60-85d9-f2ae0dea5c7a" config-ref="HTTP_Listener_config" path="/orderby4"/>
+		<ee:transform doc:name="Transformation using orderby dwl files" doc:id="46d7d27f-011e-4277-9444-c3308284439c" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/orderby4.dwl" variableName="orderbyvar2" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="56c3113e-aebd-4ed2-a216-eea3766abadc" message="payload"/>
+	</flow>
+</mule>

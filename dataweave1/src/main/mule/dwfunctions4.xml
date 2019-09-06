@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="runtimeModuleflow1" doc:id="15c3fcd1-87d8-4286-82c5-0e8d6e602e22" >
+		<http:listener doc:name="Listener" doc:id="7b7b1ab1-2c79-47df-b27a-ba5d758ddfcd" config-ref="HTTP_Listener_config" path="/runtime1"/>
+		<ee:transform doc:name="Transformation using runtime1.dwl and runtime2.dwl file" doc:id="9acdd1fd-2283-4eda-962d-ee12add1dbd1" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/runtime1.dwl" variableName="var1" />
+				<ee:set-variable resource="dw_config/runtime2.dwl" variableName="var2" />
+				
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the var1" doc:id="21569f5f-dedc-4630-8780-713dfb8df571" message="#[vars.var1]"/>
+	</flow>
+	<flow name="runtimeModuleflow2" doc:id="19d978a9-ef3e-463c-8246-25c1fc503393" >
+		<http:listener doc:name="Listener" doc:id="b5e9050f-ff29-4f30-8544-fdb54f5dcae5" config-ref="HTTP_Listener_config" path="/runtime2"/>
+		<ee:transform doc:name="Transformation using runtime3.dwl and runtime4.dwl file" doc:id="e2723c83-068e-4a87-9606-4c8b8b395e8c" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/runtime3.dwl" variableName="var1" />
+				<ee:set-variable resource="dw_config/runtime4.dwl" variableName="var2" />
+				
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the var1" doc:id="e3fbdb86-ef77-40ea-a854-7ae6994d5e1f" message="#[vars.var1]"/>
+	</flow>
+	<flow name="lookupcallflow" doc:id="32090424-23e-5be4-98be-0eb74cb8e727" >
+		<http:listener doc:name="Listener" doc:id="12fcd4dd-0a3a-49bf-b5b6-d6c9465024ed" config-ref="HTTP_Listener_config" path="/lookupcall">
+		</http:listener>
+		<set-payload value='#[using(p=read(payload,"application/json")) p.firstName]' doc:name="Set Payload" doc:id="b02b7731-b413-4917-b202-62daee16fe16" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b3d247e1-1e13-484c-bc6c-9bc1d6a7ec7c" >
+				<set-payload value="#[error.errorType]" doc:name="Set Payload" doc:id="7f40e2ee-8271-4832-9e5e-65838849a9de" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	
+
+</mule>

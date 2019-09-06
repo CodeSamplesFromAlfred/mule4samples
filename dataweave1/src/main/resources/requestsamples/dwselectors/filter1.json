@@ -1,0 +1,57 @@
+{
+	"people":{
+		"person": {
+			"name": "Akshay",
+			"address": {
+				"street": {
+					"name": "Ram",
+					"number": 2302
+				},
+				"area": {
+					"city": "Mumbai",
+					"name": "Sundar"
+				}
+			}
+		},
+		"person": {
+			"name": "Rose",
+			"address": {
+				"street": {
+					"name": "Mohan",
+					"number": 2222
+				},
+				"area": {
+					"city": "Chennai",
+					"name": "Roy"
+				}
+			}
+		},
+		"person": {
+			"name": "Jack",
+			"address": {
+				"street": {
+					"name": "Ram",
+					"number": 2192
+				},
+				"area": {
+					"city": "Blore",
+					"name": "Dinakar"
+				}
+			}
+		},
+		"person": {
+			"name": "Roshan",
+			"address": {
+				"street": {
+					"name": "Surya",
+					"number": 2301
+				},
+				"area": {
+					"city": "Pune",
+					"name": "Rohith"
+				}
+			}
+		}
+	}
+}
+

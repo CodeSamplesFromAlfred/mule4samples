@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="mapobjectflow1" doc:id="98cdc46b-fde7d-4733-9e5b-f4c58bea897f" >
+		<http:listener doc:name="Listener" doc:id="e9b86631-95ef-4cb3-9773-6f2fa8ea9cb5" config-ref="HTTP_Listener_config" path="/mapobject1"/>
+		<ee:transform doc:name="Transformation using mapobject1.dwl file" doc:id="7a0e8a7d-beff-47b5-ad04-5ec48a84e26b" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/mapobject1.dwl" variableName="var1" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the var1" doc:id="b594e3b4-7e31-4d7c-aa45-039528d4fd3b" message="#[vars.var1]"/>
+	</flow>
+	<flow name="mapobjectflow2" doc:id="2d72202e-0668-4634-996f-a1ad656cfe08" >
+		<http:listener doc:name="Listener" doc:id="31ae76c6-e1a4-4bd5-b44b-70e40e9ecbdf" config-ref="HTTP_Listener_config" path="/mapobject2"/>
+		<ee:transform doc:name="Transformation using mapobject2.dwl file" doc:id="ad33eb62-a355-4db4-97ca-c7a552697df9" >
+			<ee:variables >
+				<ee:set-variable resource="dw_config/mapobject2.dwl" variableName="var1" />
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the var1" doc:id="65373730-4006-4910-93a3-a02e475ae5f6" message="#[vars.var1]"/>
+	</flow>
+	
+</mule>

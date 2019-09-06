@@ -1,0 +1,55 @@
+{
+		"student": {
+			"name": "Akshay",
+			"address": {
+				"street": {
+					"name": "Ram",
+					"number": 2302
+				},
+				"area": {
+					"city": "Mumbai",
+					"name": "sundar"
+				}
+			}
+		},
+		"teacher": {
+			"name": "rose",
+			"address": {
+				"street": {
+					"name": "Ram mohan",
+					"number": 2302
+				},
+				"area": {
+					"city": "Chennai",
+					"name": "roy"
+				}
+			}
+		},
+		"employee": {
+			"name": "jack",
+			"address": {
+				"street": {
+					"name": "ram",
+					"number": 2302
+				},
+				"area": {
+					"city": "Blore",
+					"name": "dinakar"
+				}
+			}
+		},
+		"trenchdigger": {
+			"name": "roshan",
+			"address": {
+				"street": {
+					"name": "surya",
+					"number": 2301
+				},
+				"area": {
+					"city": "Pune",
+					"name": "Rohith"
+				}
+			}
+		}
+}
+

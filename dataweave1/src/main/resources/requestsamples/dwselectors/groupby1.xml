@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<people>
+	<person name="Akshay">
+		<address>
+			<area>
+				<city>Mumbai</city>
+				<name>Sundar</name>
+			</area>
+			<street>
+				<name>Ram</name>
+				<number>2302</number>
+			</street>
+		</address>
+	</person>
+	<person name="Rose">
+		<address>
+			<area>
+				<city>Mumbai</city>
+				<name>Roy</name>
+			</area>
+			<street>
+				<name>Mohan</name>
+				<number>2222</number>
+			</street>
+		</address>
+	</person>
+	<person name="Jack">
+		<address>
+			<area>
+				<city>Mumbai</city>
+				<name>Dinakar</name>
+			</area>
+			<street>
+				<name>Ram</name>
+				<number>2192</number>
+			</street>
+		</address>
+	</person>
+	<person name="Roshan">
+		<address>
+			<area>
+				<city>Blore</city>
+				<name>Rohith</name>
+			</area>
+			<street>
+				<name>Surya</name>
+				<number>2301</number>
+			</street>
+		</address>
+	</person>
+</people>

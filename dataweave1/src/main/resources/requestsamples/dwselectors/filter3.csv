@@ -1,0 +1,16 @@
+GroupName,Groupcode ,GroupOwner,GroupCategoryID 
+Administrators,sysadmin,13456,100
+Teachers,HS Teachers,,101
+Teachers,MS Teachers,13458,102
+Teachers,Elem Teachers,13559,103
+Teachers,1stgrade,,104
+Teachers,2nsgrade,13561,105
+Teachers,3rdgrade,13562,106
+Guidance Department,guidance,,107
+Teachers,HS Math,13660,108
+Teachers,HS English,13661,109
+Teachers,8thgrade,,110
+Teachers,7thgrade,13452,111
+Parents,Elem Parents,,112
+Parents,MS Parents,18001,113
+Parents,HS Parents,18002,114
