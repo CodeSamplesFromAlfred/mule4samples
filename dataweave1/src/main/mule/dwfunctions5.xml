@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="stringflow2" doc:id="7216296d-439d-433d-0935-9edfb100963d" >
+		<http:listener doc:name="Listener" doc:id="5b933ab0-0e89-42ce-aacb-8996830ccfee" config-ref="HTTP_Listener_config" path="/string2"/>
+		<ee:transform doc:name="Transformation using string2.dwl" doc:id="3bf5d280-40fe-4635-b87a-1f6fc4d97434" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/string2.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="72882aed-9426-4ea0-bb28-ec992d225ee5" message="#[payload]"/>
+	</flow>
+	<flow name="custommodule1" doc:id="7bdfd5f6-2218-43a3-b37c-7a38265482f0" >
+		<http:listener doc:name="Listener" doc:id="8c8644ca-5057-49e3-aafe-c56da58b957c" config-ref="HTTP_Listener_config" path="/custom1"/>
+		<ee:transform doc:name="Transformation using custom2.dwl" doc:id="99ea7811-1e1b-416b-bf8b-8dd50e85bd3d" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/custom2.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="98d8a6fd-02a3-44e5-b6c1-6db94e0f0211" message="#[payload]"/>
+	</flow>
+	<flow name="custommodule2" doc:id="8c594281-5f9e-4cc7-bd5c-f8c0ddf84aa8" >
+		<http:listener doc:name="Listener" doc:id="d629220b-9f29-4740-9dd8-03ba0c2a56bd" config-ref="HTTP_Listener_config" path="/custom2"/>
+		<ee:transform doc:name="Transformation using custom4.dwl" doc:id="91c86ff4-c2ae-4444-add5-126f549356c5" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/custom4.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the payload" doc:id="223e9fa1-d878-4fab-b400-cf44b5014069" message="#[payload]"/>
+	</flow>
+</mule>

@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<logger level="INFO" doc:name="logs the var1" doc:id="21569f5f-dedc-4630-8780-713dfb8df571" message="#[vars.var1]"/>
 	</flow>
 	<flow name="runtimeModuleflow2" doc:id="19d978a9-ef3e-463c-8246-25c1fc503393" >
-		<http:listener doc:name="Listener" doc:id="b5e9050f-ff29-4f30-8544-fdb54f5dcae5" config-ref="HTTP_Listener_config" path="/runtime2"/>
+		<http:listener doc:name="Listener" doc:id="c5e9150f-ff29-4f30-8544-fdb54f5dcae5" config-ref="HTTP_Listener_config" path="/runtime2"/>
 		<ee:transform doc:name="Transformation using runtime3.dwl and runtime4.dwl file" doc:id="e2723c83-068e-4a87-9606-4c8b8b395e8c" >
 			<ee:variables >
 				<ee:set-variable resource="dw_config/runtime3.dwl" variableName="var1" />
@@ -27,7 +27,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		</ee:transform>
 		<logger level="INFO" doc:name="logs the var1" doc:id="e3fbdb86-ef77-40ea-a854-7ae6994d5e1f" message="#[vars.var1]"/>
 	</flow>
-	<flow name="lookupcallflow" doc:id="32090424-23e-5be4-98be-0eb74cb8e727" >
+	<flow name="lookupcallflow" doc:id="32090424-23e-3be4-98be-0eb74cb8e727" >
 		<http:listener doc:name="Listener" doc:id="12fcd4dd-0a3a-49bf-b5b6-d6c9465024ed" config-ref="HTTP_Listener_config" path="/lookupcall">
 		</http:listener>
 		<set-payload value='#[using(p=read(payload,"application/json")) p.firstName]' doc:name="Set Payload" doc:id="b02b7731-b413-4917-b202-62daee16fe16" />
@@ -37,6 +37,14 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			</on-error-propagate>
 		</error-handler>
 	</flow>
-	
+	<flow name="stringflow1" doc:id="b6449db7-d2fe-474b-b38b-68891e9c6b25" >
+		<http:listener doc:name="Listener" doc:id="b2602618-5f23-4edc-97e9-af6bebc03c4b" config-ref="HTTP_Listener_config" path="/string1"/>
+		<ee:transform doc:name="Transformation using string1.dwl" doc:id="2686b64a-cce1-4ad6-b5af-61f1880f3806" >
+			<ee:message >
+				<ee:set-payload resource="dw_config/string1.dwl" />
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="logs the var1" doc:id="1f6fb989-90f4-4e01-947f-8e57a25a846f" message="#[payload]"/>
+	</flow>
 
 </mule>
